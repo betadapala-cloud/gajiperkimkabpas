@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Laporan Penyaluran Gaji Pegawai",
+  "description": "Aplikasi manajemen dan laporan penyaluran gaji pegawai paruh waktu / kontrak dengan fitur input data bulanan, import Excel, dan ekspor PDF resmi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

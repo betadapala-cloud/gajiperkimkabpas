@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Ignore HMR WebSocket connection errors in sandbox per runtime guidelines
+      window.addEventListener('error', function(e) {
+        if (e && (e.message?.includes('WebSocket') || e.message?.includes('createWebSocketModuleRunnerTransport') || e.filename?.includes('@vite/client'))) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(e) {
+        const reason = e?.reason?.message || String(e?.reason || '');
+        if (reason.includes('WebSocket') || reason.includes('createWebSocketModuleRunnerTransport')) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+    </script>
+    <title>Sistem Laporan Penyaluran Gaji Pegawai</title>
+    <meta name="description" content="Aplikasi manajemen dan laporan penyaluran gaji pegawai paruh waktu / kontrak dengan fitur input data bulanan, import Excel, dan ekspor PDF resmi." />
+    <meta property="og:title" content="Sistem Laporan Penyaluran Gaji Pegawai" />
+    <meta property="og:description" content="Aplikasi manajemen dan laporan penyaluran gaji pegawai paruh waktu / kontrak dengan fitur input data bulanan, import Excel, dan ekspor PDF resmi." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

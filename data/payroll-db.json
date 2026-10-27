@@ -1,0 +1,304 @@
+{
+  "activeCategory": "paruh-waktu",
+  "activePeriodIdByCategory": {
+    "paruh-waktu": "pw-period-2024-10",
+    "pns": "pns-period-2024-10",
+    "pppk": "pppk-period-2024-10",
+    "tpp-pns": "tpp-period-2024-10"
+  },
+  "settingsByCategory": {
+    "paruh-waktu": {
+      "instansi": "PEMERINTAH KABUPATEN / INSTANSI DAERAH",
+      "unitKerja": "SUB BAGIAN KEUANGAN & KEPEGAWAIAN",
+      "judulLaporan": "LAPORAN PENYALURAN GAJI PEGAWAI PARUH WAKTU",
+      "subJudul": "DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN",
+      "kota": "Jakarta",
+      "tanggalLaporan": "31 Oktober 2024"
+    },
+    "pns": {
+      "instansi": "PEMERINTAH KABUPATEN / INSTANSI DAERAH",
+      "unitKerja": "SUB BAGIAN KEUANGAN & KEPEGAWAIAN",
+      "judulLaporan": "LAPORAN PENYALURAN GAJI PEGAWAI NEGERI SIPIL (PNS)",
+      "subJudul": "DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN",
+      "kota": "Jakarta",
+      "tanggalLaporan": "31 Oktober 2024"
+    },
+    "pppk": {
+      "instansi": "PEMERINTAH KABUPATEN / INSTANSI DAERAH",
+      "unitKerja": "SUB BAGIAN KEUANGAN & KEPEGAWAIAN",
+      "judulLaporan": "LAPORAN PENYALURAN GAJI PEGAWAI PEMERINTAH DENGAN PERJANJIAN KERJA (PPPK)",
+      "subJudul": "DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN",
+      "kota": "Jakarta",
+      "tanggalLaporan": "31 Oktober 2024"
+    },
+    "tpp-pns": {
+      "instansi": "PEMERINTAH KABUPATEN / INSTANSI DAERAH",
+      "unitKerja": "SUB BAGIAN KEUANGAN & KEPEGAWAIAN",
+      "judulLaporan": "LAPORAN PENYALURAN TAMBAHAN PENGHASILAN PEGAWAI (TPP) PNS",
+      "subJudul": "DAFTAR REKAPITULASI PEMBAYARAN TPP DAN POTONGAN",
+      "kota": "Jakarta",
+      "tanggalLaporan": "31 Oktober 2024"
+    }
+  },
+  "dataByCategory": {
+    "paruh-waktu": [
+      {
+        "id": "pw-period-2024-10",
+        "month": 10,
+        "year": 2024,
+        "title": "Oktober 2024",
+        "status": "Disalurkan",
+        "tanggalPenyaluran": "2024-10-31",
+        "catatan": "Penyaluran gaji pegawai paruh waktu bulan Oktober 2024 via transfer bank.",
+        "items": [
+          {
+            "id": "item-pw-1",
+            "no": 1,
+            "nama": "MUHAMMAD AFANDI",
+            "noRekening": "0236739074",
+            "gajiKotor": 1888984,
+            "potongan": 605251,
+            "gajiBersih": 1283733,
+            "keterangan": "Lunas / Terkirim"
+          },
+          {
+            "id": "item-pw-2",
+            "no": 2,
+            "nama": "FIRDITYA RACHMA DAMAYANTI",
+            "noRekening": "0236024415",
+            "gajiKotor": 1838504,
+            "potongan": 604771,
+            "gajiBersih": 1233733,
+            "keterangan": "Lunas / Terkirim"
+          },
+          {
+            "id": "item-pw-3",
+            "no": 3,
+            "nama": "HADI MULYONO",
+            "noRekening": "0232755130",
+            "gajiKotor": 1939464,
+            "potongan": 605731,
+            "gajiBersih": 1333733,
+            "keterangan": "Lunas / Terkirim"
+          },
+          {
+            "id": "item-pw-4",
+            "no": 4,
+            "nama": "M SUGIANTO",
+            "noRekening": "0233138398",
+            "gajiKotor": 1788024,
+            "potongan": 604291,
+            "gajiBersih": 1183733,
+            "keterangan": "Lunas / Terkirim"
+          }
+        ]
+      },
+      {
+        "id": "pw-period-2024-11",
+        "month": 11,
+        "year": 2024,
+        "title": "November 2024",
+        "status": "Draf",
+        "tanggalPenyaluran": "2024-11-30",
+        "catatan": "Draf penyaluran gaji paruh waktu November 2024.",
+        "items": [
+          {
+            "id": "item-pw-11-1",
+            "no": 1,
+            "nama": "MUHAMMAD AFANDI",
+            "noRekening": "0236739074",
+            "gajiKotor": 1888984,
+            "potongan": 605251,
+            "gajiBersih": 1283733
+          },
+          {
+            "id": "item-pw-11-2",
+            "no": 2,
+            "nama": "FIRDITYA RACHMA DAMAYANTI",
+            "noRekening": "0236024415",
+            "gajiKotor": 1838504,
+            "potongan": 604771,
+            "gajiBersih": 1233733
+          },
+          {
+            "id": "item-pw-11-3",
+            "no": 3,
+            "nama": "HADI MULYONO",
+            "noRekening": "0232755130",
+            "gajiKotor": 1939464,
+            "potongan": 605731,
+            "gajiBersih": 1333733
+          },
+          {
+            "id": "item-pw-11-4",
+            "no": 4,
+            "nama": "M SUGIANTO",
+            "noRekening": "0233138398",
+            "gajiKotor": 1788024,
+            "potongan": 604291,
+            "gajiBersih": 1183733
+          }
+        ]
+      }
+    ],
+    "pns": [
+      {
+        "id": "pns-period-2024-10",
+        "month": 10,
+        "year": 2024,
+        "title": "Oktober 2024",
+        "status": "Disalurkan",
+        "tanggalPenyaluran": "2024-10-01",
+        "catatan": "Penyaluran gaji PNS bulan Oktober 2024.",
+        "items": [
+          {
+            "id": "item-pns-1",
+            "no": 1,
+            "nama": "DRS. BAMBANG WIJAYA, M.SI",
+            "noRekening": "0112847291",
+            "gajiKotor": 4850000,
+            "potongan": 485000,
+            "gajiBersih": 4365000,
+            "keterangan": "Golongan IV/a"
+          },
+          {
+            "id": "item-pns-2",
+            "no": 2,
+            "nama": "SRI WAHYUNI, S.SOS",
+            "noRekening": "0119384720",
+            "gajiKotor": 3950000,
+            "potongan": 395000,
+            "gajiBersih": 3555000,
+            "keterangan": "Golongan III/c"
+          },
+          {
+            "id": "item-pns-3",
+            "no": 3,
+            "nama": "AGUS PRASETYO, S.KOM",
+            "noRekening": "0118472948",
+            "gajiKotor": 3450000,
+            "potongan": 345000,
+            "gajiBersih": 3105000,
+            "keterangan": "Golongan III/a"
+          },
+          {
+            "id": "item-pns-4",
+            "no": 4,
+            "nama": "NUR INDAH SARI, A.MD",
+            "noRekening": "0117392048",
+            "gajiKotor": 2850000,
+            "potongan": 285000,
+            "gajiBersih": 2565000,
+            "keterangan": "Golongan II/c"
+          }
+        ]
+      }
+    ],
+    "pppk": [
+      {
+        "id": "pppk-period-2024-10",
+        "month": 10,
+        "year": 2024,
+        "title": "Oktober 2024",
+        "status": "Disalurkan",
+        "tanggalPenyaluran": "2024-10-01",
+        "catatan": "Penyaluran gaji PPPK bulan Oktober 2024.",
+        "items": [
+          {
+            "id": "item-pppk-1",
+            "no": 1,
+            "nama": "EKO PRASETYA, S.PD",
+            "noRekening": "0281948201",
+            "gajiKotor": 3200000,
+            "potongan": 320000,
+            "gajiBersih": 2880000,
+            "keterangan": "PPPK Ahli Pertama"
+          },
+          {
+            "id": "item-pppk-2",
+            "no": 2,
+            "nama": "RATNA DEWI, S.PD",
+            "noRekening": "0283749201",
+            "gajiKotor": 3200000,
+            "potongan": 320000,
+            "gajiBersih": 2880000,
+            "keterangan": "PPPK Ahli Pertama"
+          },
+          {
+            "id": "item-pppk-3",
+            "no": 3,
+            "nama": "AHMAD FAUZI, S.TR.KEP",
+            "noRekening": "0285938201",
+            "gajiKotor": 3200000,
+            "potongan": 320000,
+            "gajiBersih": 2880000,
+            "keterangan": "PPPK Tenaga Kesehatan"
+          },
+          {
+            "id": "item-pppk-4",
+            "no": 4,
+            "nama": "SITI RAHMAH, A.MD.KEB",
+            "noRekening": "0287492019",
+            "gajiKotor": 2950000,
+            "potongan": 295000,
+            "gajiBersih": 2655000,
+            "keterangan": "PPPK Bidan Terampil"
+          }
+        ]
+      }
+    ],
+    "tpp-pns": [
+      {
+        "id": "tpp-period-2024-10",
+        "month": 10,
+        "year": 2024,
+        "title": "Oktober 2024",
+        "status": "Disalurkan",
+        "tanggalPenyaluran": "2024-10-15",
+        "catatan": "Penyaluran Tambahan Penghasilan Pegawai (TPP) PNS bulan Oktober 2024.",
+        "items": [
+          {
+            "id": "item-tpp-1",
+            "no": 1,
+            "nama": "DRS. BAMBANG WIJAYA, M.SI",
+            "noRekening": "0112847291",
+            "gajiKotor": 7500000,
+            "potongan": 1125000,
+            "gajiBersih": 6375000,
+            "keterangan": "Eselon II / PPh 15%"
+          },
+          {
+            "id": "item-tpp-2",
+            "no": 2,
+            "nama": "SRI WAHYUNI, S.SOS",
+            "noRekening": "0119384720",
+            "gajiKotor": 5800000,
+            "potongan": 290000,
+            "gajiBersih": 5510000,
+            "keterangan": "Eselon III / PPh 5%"
+          },
+          {
+            "id": "item-tpp-3",
+            "no": 3,
+            "nama": "AGUS PRASETYO, S.KOM",
+            "noRekening": "0118472948",
+            "gajiKotor": 4500000,
+            "potongan": 225000,
+            "gajiBersih": 4275000,
+            "keterangan": "Fungsional Ahli Muda / PPh 5%"
+          },
+          {
+            "id": "item-tpp-4",
+            "no": 4,
+            "nama": "NUR INDAH SARI, A.MD",
+            "noRekening": "0117392048",
+            "gajiKotor": 3200000,
+            "potongan": 0,
+            "gajiBersih": 3200000,
+            "keterangan": "Pelaksana / PPh 0%"
+          }
+        ]
+      }
+    ]
+  }
+}

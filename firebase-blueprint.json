@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "PayrollPeriod": {
+      "title": "PayrollPeriod",
+      "description": "Periode penyaluran gaji per kategori dengan daftar pegawai dan status pembayaran",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unik periode"
+        },
+        "category": {
+          "type": "string",
+          "description": "Kategori gaji (paruh-waktu, pns, pppk, tpp-pns)"
+        },
+        "month": {
+          "type": "number",
+          "description": "Bulan 1-12"
+        },
+        "year": {
+          "type": "number",
+          "description": "Tahun"
+        },
+        "title": {
+          "type": "string",
+          "description": "Nama periode"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status penyaluran (Draf atau Disalurkan)"
+        },
+        "items": {
+          "type": "array",
+          "description": "Daftar rincian gaji pegawai beserta konfirmasi dan feedback"
+        }
+      },
+      "required": ["id", "category", "month", "year", "title", "status", "items"]
+    },
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "Pengaturan instansi dan judul laporan",
+      "type": "object",
+      "properties": {
+        "instansi": {
+          "type": "string",
+          "description": "Nama instansi"
+        },
+        "unitKerja": {
+          "type": "string",
+          "description": "Unit kerja"
+        },
+        "judulLaporan": {
+          "type": "string",
+          "description": "Judul laporan utama"
+        }
+      },
+      "required": ["instansi", "unitKerja", "judulLaporan"]
+    }
+  },
+  "firestore": {
+    "/payroll_periods/{periodId}": {
+      "schema": "PayrollPeriod",
+      "description": "Koleksi periode penyaluran gaji untuk semua kategori"
+    },
+    "/app_settings/{settingId}": {
+      "schema": "AppSettings",
+      "description": "Koleksi pengaturan laporan aplikasi"
+    }
+  }
+}

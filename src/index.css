@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @media print {
+    body {
+      background-color: white !important;
+      color: black !important;
+      font-size: 11pt;
+    }
+    
+    .print-hide,
+    header,
+    nav,
+    button,
+    .no-print {
+      display: none !important;
+    }
+
+    .printable-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+
+    .printable-table th,
+    .printable-table td {
+      border: 1px solid #111827 !important;
+      padding: 6px 8px !important;
+    }
+
+    .printable-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
