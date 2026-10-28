@@ -146,6 +146,7 @@ export default function App() {
 
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [isInputModalOpen, setIsInputModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PayrollItem | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -301,6 +302,7 @@ export default function App() {
     if (isUnlocked) {
       action();
     } else {
+      setPendingAction(() => action);
       setIsAuthModalOpen(true);
     }
   };
@@ -713,12 +715,39 @@ export default function App() {
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-emerald-600" />
                   <span>Kategori:</span>
+                  {!isUnlocked && (
+                    <button
+                      type="button"
+                      onClick={() => requireAdmin(() => {})}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300 rounded text-[10px] font-bold transition"
+                      title="Kategori dikunci: Klik untuk membuka kunci dengan password admin"
+                    >
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>Terkunci</span>
+                    </button>
+                  )}
                 </span>
                 <div className="relative">
                   <select
                     value={activeCategory}
-                    onChange={(e) => setActiveCategory(e.target.value as PayrollCategory)}
-                    className="appearance-none pl-3.5 pr-9 py-2 text-sm font-extrabold text-slate-900 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-300 rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-2xs"
+                    onChange={(e) => {
+                      const nextCat = e.target.value as PayrollCategory;
+                      if (nextCat === activeCategory) return;
+                      requireAdmin(() => {
+                        setActiveCategory(nextCat);
+                        showToast(`Beralih ke kategori: ${CATEGORIES.find((c) => c.id === nextCat)?.name || nextCat}`);
+                      });
+                    }}
+                    className={`appearance-none pl-3.5 pr-9 py-2 text-sm font-extrabold rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-2xs ${
+                      !isUnlocked
+                        ? 'text-amber-950 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-300'
+                        : 'text-slate-900 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-300'
+                    }`}
+                    title={
+                      !isUnlocked
+                        ? 'Kategori Terkunci: Memerlukan password admin untuk merubah kategori'
+                        : 'Pilih Kategori Gaji'
+                    }
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -726,7 +755,11 @@ export default function App() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="w-4 h-4 text-emerald-700 absolute right-2.5 top-3 pointer-events-none" />
+                  <ChevronDown
+                    className={`w-4 h-4 absolute right-2.5 top-3 pointer-events-none ${
+                      !isUnlocked ? 'text-amber-700' : 'text-emerald-700'
+                    }`}
+                  />
                 </div>
               </div>
 
@@ -1242,10 +1275,18 @@ export default function App() {
       {/* MODAL AUTENTIKASI ADMIN (user: admin, password: djoko92m) */}
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setPendingAction(null);
+        }}
         onSuccess={() => {
           setIsUnlocked(true);
           showToast('Kunci edit berhasil dibuka! Anda dapat mengedit data sekarang.');
+          if (pendingAction) {
+            const action = pendingAction;
+            setPendingAction(null);
+            action();
+          }
         }}
       />
 
