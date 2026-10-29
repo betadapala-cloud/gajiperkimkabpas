@@ -94,7 +94,7 @@ export const SlipGajiModal: React.FC<Props> = ({
               </thead>
               <tbody className="divide-y divide-slate-200">
                 <tr>
-                  <td className="p-2.5 font-medium">Gaji Kotor</td>
+                  <td className="p-2.5 font-medium">Nilai Kotor</td>
                   <td className="p-2.5 text-right font-mono font-semibold">
                     {formatRupiah(item.gajiKotor)}
                   </td>
@@ -108,7 +108,7 @@ export const SlipGajiModal: React.FC<Props> = ({
                   </td>
                 </tr>
                 <tr className="bg-emerald-50 text-emerald-950 font-bold border-t-2 border-slate-300">
-                  <td className="p-3 text-sm">GAJI BERSIH</td>
+                  <td className="p-3 text-sm">NILAI BERSIH</td>
                   <td className="p-3 text-right font-mono text-base text-emerald-700">
                     {formatRupiah(item.gajiBersih)}
                   </td>
@@ -127,7 +127,7 @@ export const SlipGajiModal: React.FC<Props> = ({
             </span>
           </div>
 
-          {/* Status Konfirmasi & Feedback Pegawai */}
+          {/* Status Konfirmasi & Ulasan Pegawai */}
           <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-xl text-xs space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold text-slate-500">
@@ -146,7 +146,7 @@ export const SlipGajiModal: React.FC<Props> = ({
             {item.feedback && (
               <div className="pt-1.5 border-t border-blue-200/60 text-[11px] text-slate-700">
                 <span className="font-bold text-slate-900 block text-[10px] uppercase">
-                  Catatan / Feedback Pegawai:
+                  Catatan / Ulasan Pegawai:
                 </span>
                 <p className="italic bg-white p-2 rounded border border-blue-100 mt-0.5">
                   "{item.feedback}"
@@ -158,7 +158,7 @@ export const SlipGajiModal: React.FC<Props> = ({
           {/* Catatan Resmi Bank & Potongan */}
           <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl text-[10.5px] leading-relaxed text-amber-950">
             <span className="font-bold block">Catatan:</span>
-            Bahwasannya Gaji Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
+            Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
           </div>
         </div>
       </div>

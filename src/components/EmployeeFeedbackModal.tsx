@@ -56,7 +56,7 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base tracking-tight">
-                Feedback & Konfirmasi Penerimaan Gaji
+                Ulasan & Konfirmasi Penerimaan Gaji
               </h3>
               <p className="text-xs text-blue-200">
                 Periode: {periodTitle} • Terbuka untuk Pegawai (Tanpa Kunci Admin)
@@ -89,7 +89,7 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-slate-200/80 text-xs">
-              <span className="text-slate-500">Gaji Bersih Diterima:</span>
+              <span className="text-slate-500">Nilai Bersih Diterima:</span>
               <span className="font-mono font-bold text-emerald-700 text-sm">
                 {formatRupiah(item.gajiBersih)}
               </span>
@@ -130,20 +130,20 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
             )}
           </div>
 
-          {/* Feedback / Komentar Textarea */}
+          {/* Feedback / Ulasan Textarea */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-slate-700">
-                Komentar / Feedback Pegawai:
+                Ulasan / Feedback Pegawai:
               </label>
               {comment.trim() && (
                 <button
                   type="button"
                   onClick={handleClearComment}
                   className="text-[11px] text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-0.5 rounded border border-rose-200 transition flex items-center gap-1"
-                  title="Hapus komentar / feedback"
+                  title="Hapus ulasan / feedback"
                 >
-                  <Trash2 className="w-3 h-3" /> Hapus Komentar
+                  <Trash2 className="w-3 h-3" /> Hapus Ulasan
                 </button>
               )}
             </div>
@@ -151,7 +151,7 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Tuliskan catatan, umpan balik, atau konfirmasi terkait penyaluran gaji Anda..."
+              placeholder="Tuliskan catatan, ulasan, atau konfirmasi terkait penyaluran dana Anda..."
               className="w-full text-xs p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-hidden transition text-slate-800 placeholder-slate-400"
               maxLength={500}
             />
@@ -181,7 +181,7 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
               className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs hover:shadow transition flex items-center gap-1.5 disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
-              {isSaving ? 'Menyimpan...' : 'Simpan Feedback'}
+              {isSaving ? 'Menyimpan...' : 'Simpan Ulasan'}
             </button>
           </div>
         </form>

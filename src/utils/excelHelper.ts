@@ -7,7 +7,7 @@ import { parseNominal } from './formatters';
  */
 export function downloadExcelTemplate() {
   const wsData = [
-    ['NO', 'NAMA', 'NO REKENING', 'GAJI KOTOR', 'JUMLAH POTONGAN', 'GAJI BERSIH'],
+    ['NO', 'NAMA', 'NO REKENING', 'NILAI KOTOR', 'JUMLAH POTONGAN', 'NILAI BERSIH'],
     [1, 'MUHAMMAD AFANDI', '0236739074', 1888984, 605251, 1283733],
     [2, 'FIRDITYA RACHMA DAMAYANTI', '0236024415', 1838504, 604771, 1233733],
     [3, 'HADI MULYONO', '0232755130', 1939464, 605731, 1333733],
@@ -21,9 +21,9 @@ export function downloadExcelTemplate() {
     { wch: 6 },  // NO
     { wch: 30 }, // NAMA
     { wch: 18 }, // NO REKENING
-    { wch: 16 }, // GAJI KOTOR
+    { wch: 16 }, // NILAI KOTOR
     { wch: 22 }, // JUMLAH POTONGAN
-    { wch: 16 }, // GAJI BERSIH
+    { wch: 16 }, // NILAI BERSIH
   ];
 
   const wb = XLSX.utils.book_new();
@@ -46,7 +46,7 @@ export function exportPeriodToExcel(period: PayrollPeriod, settings: ReportSetti
     [settings.judulLaporan.toUpperCase()],
     [`PERIODE: ${period.title.toUpperCase()}`],
     [], // Blank line
-    ['NO', 'NAMA', 'NO REKENING', 'GAJI KOTOR', 'JUMLAH POTONGAN', 'GAJI BERSIH'],
+    ['NO', 'NAMA', 'NO REKENING', 'NILAI KOTOR', 'JUMLAH POTONGAN', 'NILAI BERSIH'],
   ];
 
   period.items.forEach((item, index) => {
@@ -71,7 +71,7 @@ export function exportPeriodToExcel(period: PayrollPeriod, settings: ReportSetti
   ]);
 
   aoa.push([]);
-  aoa.push(['Catatan: Bahwasannya Gaji Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).']);
+  aoa.push(['Catatan: Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).']);
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
 
@@ -80,9 +80,9 @@ export function exportPeriodToExcel(period: PayrollPeriod, settings: ReportSetti
     { wch: 8 },  // NO
     { wch: 35 }, // NAMA
     { wch: 20 }, // NO REKENING
-    { wch: 18 }, // GAJI KOTOR
+    { wch: 18 }, // NILAI KOTOR
     { wch: 22 }, // JUMLAH POTONGAN
-    { wch: 18 }, // GAJI BERSIH
+    { wch: 18 }, // NILAI BERSIH
   ];
 
   const wb = XLSX.utils.book_new();

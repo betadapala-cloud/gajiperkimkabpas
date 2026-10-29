@@ -48,16 +48,16 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
   const totalPotongan = period.items.reduce((sum, item) => sum + item.potongan, 0);
   const totalBersih = period.items.reduce((sum, item) => sum + item.gajiBersih, 0);
 
-  // 2. Data Tabel dengan kolom JUMLAH POTONGAN & KONFIRMASI/KOMENTAR
+  // 2. Data Tabel dengan kolom JUMLAH POTONGAN & KONFIRMASI/ULASAN
   const tableHead = [
     [
       { content: 'NO', styles: { halign: 'center' as const } },
       { content: 'NAMA', styles: { halign: 'center' as const } },
       { content: 'NO REKENING', styles: { halign: 'center' as const } },
-      { content: 'GAJI KOTOR', styles: { halign: 'center' as const } },
+      { content: 'NILAI KOTOR', styles: { halign: 'center' as const } },
       { content: 'JUMLAH POTONGAN', styles: { halign: 'center' as const } },
-      { content: 'GAJI BERSIH', styles: { halign: 'center' as const } },
-      { content: 'KONFIRMASI & KOMENTAR', styles: { halign: 'center' as const } },
+      { content: 'NILAI BERSIH', styles: { halign: 'center' as const } },
+      { content: 'KONFIRMASI & ULASAN', styles: { halign: 'center' as const } },
     ],
   ];
 
@@ -69,7 +69,7 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
     { content: formatNominal(item.potongan), styles: { halign: 'right' as const } },
     { content: formatNominal(item.gajiBersih), styles: { halign: 'right' as const } },
     {
-      content: `${item.isConfirmed ? `✓ Diterima${item.confirmedAt ? ` (${item.confirmedAt})` : ''}` : 'Belum Konfirmasi'}${item.feedback ? `\nKomentar: "${item.feedback}"` : ''}`,
+      content: `${item.isConfirmed ? `✓ Diterima${item.confirmedAt ? ` (${item.confirmedAt})` : ''}` : 'Belum Konfirmasi'}${item.feedback ? `\nUlasan: "${item.feedback}"` : ''}`,
       styles: { halign: 'left' as const, fontSize: 8 },
     },
   ]);
@@ -133,10 +133,10 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
       0: { cellWidth: 10 }, // NO
       1: { cellWidth: 54 }, // NAMA
       2: { cellWidth: 32 }, // NO REKENING
-      3: { cellWidth: 35 }, // GAJI KOTOR
+      3: { cellWidth: 35 }, // NILAI KOTOR
       4: { cellWidth: 35 }, // JUMLAH POTONGAN
-      5: { cellWidth: 33 }, // GAJI BERSIH
-      6: { cellWidth: 70, fontSize: 7.5 }, // KONFIRMASI & KOMENTAR
+      5: { cellWidth: 33 }, // NILAI BERSIH
+      6: { cellWidth: 70, fontSize: 7.5 }, // KONFIRMASI & ULASAN
     },
     margin: { left: 14, right: 14 },
     tableWidth: 'auto',
@@ -145,11 +145,11 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
   // Ambil posisi Y setelah tabel
   const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
 
-  // Terbilang Total Gaji Bersih
+  // Terbilang Total Nilai Bersih
   doc.setFontSize(9);
   doc.setFont('helvetica', 'italic');
   doc.text(
-    `Terbilang Jumlah Gaji Bersih: "${terbilangRupiah(totalBersih)}"`,
+    `Terbilang Jumlah Nilai Bersih: "${terbilangRupiah(totalBersih)}"`,
     14,
     finalY
   );
@@ -158,7 +158,7 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.text(
-    'Catatan: Bahwasannya Gaji Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).',
+    'Catatan: Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).',
     14,
     finalY + 6
   );

@@ -117,7 +117,7 @@ export const ImportExcelModal: React.FC<Props> = ({
                   Belum punya template format Excel?
                 </p>
                 <p className="text-[11px] text-emerald-700">
-                  Unduh template resmi dengan susunan kolom NO, NAMA, NO REKENING, GAJI KOTOR, JUMLAH POTONGAN, GAJI BERSIH.
+                  Unduh template resmi dengan susunan kolom NO, NAMA, NO REKENING, NILAI KOTOR, JUMLAH POTONGAN, NILAI BERSIH.
                 </p>
               </div>
             </div>
@@ -201,7 +201,7 @@ export const ImportExcelModal: React.FC<Props> = ({
                       <p className="text-base font-bold text-rose-600">Rp {formatNominal(totalPotongan)}</p>
                     </div>
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                      <p className="text-[10px] uppercase font-bold text-emerald-700">Total Gaji Bersih</p>
+                      <p className="text-[10px] uppercase font-bold text-emerald-700">Total Nilai Bersih</p>
                       <p className="text-base font-bold text-emerald-700">Rp {formatNominal(totalBersih)}</p>
                     </div>
                   </div>
@@ -249,9 +249,9 @@ export const ImportExcelModal: React.FC<Props> = ({
                           <th className="p-2 text-center w-8">NO</th>
                           <th className="p-2">NAMA</th>
                           <th className="p-2">NO REKENING</th>
-                          <th className="p-2 text-right">GAJI KOTOR</th>
+                          <th className="p-2 text-right">NILAI KOTOR</th>
                           <th className="p-2 text-right">JUMLAH POTONGAN</th>
-                          <th className="p-2 text-right">GAJI BERSIH</th>
+                          <th className="p-2 text-right">NILAI BERSIH</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">

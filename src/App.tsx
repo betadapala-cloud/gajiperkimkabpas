@@ -430,7 +430,7 @@ export default function App() {
     );
   };
 
-  // Simpan Feedback / Komentar Pegawai (TIDAK DIKUNCI ADMIN)
+  // Simpan Feedback / Ulasan Pegawai (TIDAK DIKUNCI ADMIN)
   const handleSaveFeedback = (commentText: string, isConfirmed?: boolean) => {
     if (!activePeriod || !feedbackModalItem) return;
     const now = new Date().toLocaleString('id-ID', {
@@ -469,7 +469,7 @@ export default function App() {
 
     setIsFeedbackModalOpen(false);
     setFeedbackModalItem(null);
-    showToast(`Feedback dan komentar untuk ${feedbackModalItem.nama} berhasil disimpan!`);
+    showToast(`Ulasan dan konfirmasi untuk ${feedbackModalItem.nama} berhasil disimpan!`);
   };
 
   // Import Excel Success
@@ -629,7 +629,7 @@ export default function App() {
                 Sistem Penyaluran Gaji Pegawai
               </h1>
               <p className="text-[11px] text-slate-400">
-                Rekapitulasi Gaji Kotor, Potongan & Gaji Bersih
+                Rekapitulasi Nilai Kotor, Potongan & Nilai Bersih
               </p>
             </div>
           </div>
@@ -880,7 +880,7 @@ export default function App() {
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
             <div className="flex items-center justify-between text-slate-500 mb-1">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                Total Gaji Kotor
+                Total Nilai Kotor
               </span>
               <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
                 <DollarSign className="w-4 h-4" />
@@ -890,7 +890,7 @@ export default function App() {
               Rp {formatNominal(totals.kotor)}
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Gaji bruto sebelum potongan
+              Nilai bruto sebelum potongan
             </p>
           </div>
 
@@ -914,7 +914,7 @@ export default function App() {
           <div className="bg-emerald-900 text-white p-4 rounded-2xl shadow-xs">
             <div className="flex items-center justify-between text-emerald-200 mb-1">
               <span className="text-[11px] font-bold uppercase tracking-wider">
-                Total Gaji Bersih
+                Total Nilai Bersih
               </span>
               <div className="p-1.5 bg-emerald-800 text-emerald-300 rounded-lg">
                 <Wallet className="w-4 h-4" />
@@ -1053,16 +1053,16 @@ export default function App() {
                     NO REKENING
                   </th>
                   <th className="py-3 px-4 text-center w-36 tracking-wider">
-                    GAJI KOTOR
+                    NILAI KOTOR
                   </th>
                   <th className="py-3 px-4 text-center w-44 tracking-wider">
                     JUMLAH POTONGAN
                   </th>
                   <th className="py-3 px-4 text-center w-36 tracking-wider">
-                    GAJI BERSIH
+                    NILAI BERSIH
                   </th>
                   <th className="py-3 px-3 text-center w-64">
-                    KONFIRMASI & KOMENTAR
+                    KONFIRMASI & ULASAN
                   </th>
                 </tr>
               </thead>
@@ -1104,7 +1104,7 @@ export default function App() {
                         {item.noRekening}
                       </td>
 
-                      {/* GAJI KOTOR */}
+                      {/* NILAI KOTOR */}
                       <td className="py-2.5 px-4 text-right font-mono text-black align-middle">
                         {formatNominal(item.gajiKotor)}
                       </td>
@@ -1114,12 +1114,12 @@ export default function App() {
                         {formatNominal(item.potongan)}
                       </td>
 
-                      {/* GAJI BERSIH */}
+                      {/* NILAI BERSIH */}
                       <td className="py-2.5 px-4 text-right font-mono font-medium text-black align-middle">
                         {formatNominal(item.gajiBersih)}
                       </td>
 
-                      {/* KONFIRMASI & KOMENTAR (Status & komentar tampil saat print, tombol interaktif print-hide) */}
+                      {/* KONFIRMASI & ULASAN (Status & ulasan tampil saat print, tombol interaktif print-hide) */}
                       <td className="py-2.5 px-3 text-left align-middle">
                         <div className="space-y-1">
                           {/* Status konfirmasi tampil saat print & screen */}
@@ -1135,10 +1135,10 @@ export default function App() {
                             )}
                           </div>
 
-                          {/* Komentar tampil saat print & screen jika ada */}
+                          {/* Ulasan tampil saat print & screen jika ada */}
                           {item.feedback && (
                             <div className="text-[10.5px] font-sans text-blue-950 bg-blue-50 border border-blue-200 rounded px-2 py-1">
-                              <span className="font-bold text-blue-700">Komentar:</span> "{item.feedback}" {item.feedbackAt ? `(${item.feedbackAt})` : ''}
+                              <span className="font-bold text-blue-700">Ulasan:</span> "{item.feedback}" {item.feedbackAt ? `(${item.feedbackAt})` : ''}
                             </div>
                           )}
 
@@ -1175,12 +1175,12 @@ export default function App() {
                               }`}
                               title={
                                 item.feedback
-                                  ? `Komentar: "${item.feedback}". Klik untuk melihat/mengedit.`
-                                  : 'Klik untuk mengisi komentar atau feedback penerimaan'
+                                  ? `Ulasan: "${item.feedback}". Klik untuk melihat/mengedit.`
+                                  : 'Klik untuk mengisi ulasan atau konfirmasi penerimaan'
                               }
                             >
                               <MessageSquare className={`w-3.5 h-3.5 ${item.feedback ? 'text-blue-600' : 'text-slate-400'}`} />
-                              <span>{item.feedback ? 'Feedback' : '+ Komentar'}</span>
+                              <span>{item.feedback ? 'Ulasan' : '+ Ulasan'}</span>
                             </button>
 
                             <div className="flex items-center gap-0.5 pl-1 border-l border-slate-200">
@@ -1250,7 +1250,7 @@ export default function App() {
           <div className="pt-2 space-y-2.5">
             <div className="p-3 bg-slate-50 border border-slate-300 rounded text-xs">
               <span className="font-bold text-slate-700 uppercase tracking-wider block text-[10px]">
-                Terbilang Total Gaji Bersih yang Disalurkan:
+                Terbilang Total Nilai Bersih yang Disalurkan:
               </span>
               <p className="font-semibold text-slate-900 italic mt-0.5">
                 "{terbilangRupiah(totals.bersih)}"
@@ -1260,7 +1260,7 @@ export default function App() {
             {/* Catatan Sesuai Permintaan */}
             <div className="p-3 bg-amber-50/80 border border-amber-300/80 rounded text-xs text-amber-950">
               <p className="font-medium">
-                <strong className="font-bold">Catatan:</strong> Bahwasannya Gaji Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
+                <strong className="font-bold">Catatan:</strong> Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
               </p>
             </div>
           </div>

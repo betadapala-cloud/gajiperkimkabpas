@@ -149,10 +149,10 @@ export const InputEmployeeModal: React.FC<Props> = ({
             )}
           </div>
 
-          {/* Gaji Kotor */}
+          {/* Nilai Kotor */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Gaji Kotor (Rp) <span className="text-red-500">*</span>
+              Nilai Kotor (Rp) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-sm font-semibold text-slate-500">Rp</span>
@@ -190,16 +190,16 @@ export const InputEmployeeModal: React.FC<Props> = ({
             )}
           </div>
 
-          {/* Kalkulasi Gaji Bersih (Auto-calculated) */}
+          {/* Kalkulasi Nilai Bersih (Auto-calculated) */}
           <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2 text-emerald-800">
               <Calculator className="w-5 h-5 text-emerald-600" />
               <div>
                 <span className="text-xs uppercase font-bold tracking-wider block text-emerald-900">
-                  Gaji Bersih
+                  Nilai Bersih
                 </span>
                 <span className="text-[11px] text-emerald-700">
-                  Gaji Kotor - Jumlah Potongan
+                  Nilai Kotor - Jumlah Potongan
                 </span>
               </div>
             </div>
