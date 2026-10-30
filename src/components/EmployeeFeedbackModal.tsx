@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PayrollItem } from '../types';
 import { formatNominal, formatRupiah } from '../utils/formatters';
-import { MessageSquare, CheckCircle2, X, Save, Clock, User, CreditCard, Trash2, RotateCcw } from 'lucide-react';
+import { MessageSquare, CheckCircle2, X, Save, Clock, User, CreditCard, Trash2, RotateCcw, Lock } from 'lucide-react';
 
 interface EmployeeFeedbackModalProps {
   isOpen: boolean;
@@ -10,6 +10,8 @@ interface EmployeeFeedbackModalProps {
   onClose: () => void;
   onSave: (feedback: string, isConfirmed?: boolean) => void;
   isSaving?: boolean;
+  requireAdmin?: (action: () => void) => void;
+  isUnlocked?: boolean;
 }
 
 export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
@@ -19,6 +21,8 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
   onClose,
   onSave,
   isSaving = false,
+  requireAdmin,
+  isUnlocked = false,
 }) => {
   const [comment, setComment] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -34,6 +38,13 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Jika awalnya sudah dikonfirmasi dan sekarang statusnya dibatalkan, harus lewat requireAdmin
+    if (item.isConfirmed && !confirmed && !isUnlocked && requireAdmin) {
+      requireAdmin(() => {
+        onSave(comment.trim(), confirmed);
+      });
+      return;
+    }
     onSave(comment.trim(), confirmed);
   };
 
@@ -41,7 +52,20 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
     setComment('');
   };
 
+  const handleToggleCheck = (checked: boolean) => {
+    // Jika awalnya sudah terkonfirmasi dan pengguna ingin membatalkannya
+    if (item.isConfirmed && !checked && !isUnlocked && requireAdmin) {
+      requireAdmin(() => setConfirmed(false));
+      return;
+    }
+    setConfirmed(checked);
+  };
+
   const handleUncheckConfirmation = () => {
+    if (item.isConfirmed && !isUnlocked && requireAdmin) {
+      requireAdmin(() => setConfirmed(false));
+      return;
+    }
     setConfirmed(false);
   };
 
@@ -103,7 +127,7 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
                 type="checkbox"
                 id="confirmCheck"
                 checked={confirmed}
-                onChange={(e) => setConfirmed(e.target.checked)}
+                onChange={(e) => handleToggleCheck(e.target.checked)}
                 className="mt-1 w-4 h-4 text-emerald-600 rounded border-emerald-300 focus:ring-emerald-500 cursor-pointer"
               />
               <label htmlFor="confirmCheck" className="text-xs text-slate-700 cursor-pointer select-none">
@@ -122,10 +146,19 @@ export const EmployeeFeedbackModal: React.FC<EmployeeFeedbackModalProps> = ({
               <button
                 type="button"
                 onClick={handleUncheckConfirmation}
-                className="text-[11px] text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded border border-rose-200 transition shrink-0 flex items-center gap-1"
-                title="Batalkan ceklis konfirmasi"
+                className="text-[11px] text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded border border-rose-200 transition shrink-0 flex items-center gap-1 font-medium"
+                title={
+                  item.isConfirmed && !isUnlocked
+                    ? 'Batalkan ceklis konfirmasi (Memerlukan buka kunci aplikasi)'
+                    : 'Batalkan ceklis konfirmasi'
+                }
               >
-                <RotateCcw className="w-3 h-3" /> Batalkan
+                {item.isConfirmed && !isUnlocked ? (
+                  <Lock className="w-3 h-3 text-rose-500" />
+                ) : (
+                  <RotateCcw className="w-3 h-3" />
+                )}
+                <span>Batalkan</span>
               </button>
             )}
           </div>

@@ -396,10 +396,25 @@ export default function App() {
     });
   };
 
-  // Konfirmasi Penerimaan Gaji Pegawai (TIDAK DIKUNCI ADMIN)
+  // Konfirmasi Penerimaan Gaji Pegawai
+  // Catatan: Mengkonfirmasi penerimaan terbuka untuk pegawai, namun MEMBATALKAN konfirmasi yang sudah ada harus membuka kunci aplikasi (password admin: djoko92m).
   const handleToggleConfirmation = (item: PayrollItem) => {
     if (!activePeriod) return;
-    const newConfirmed = !item.isConfirmed;
+
+    // Jika saat ini sudah dikonfirmasi, membatalkannya harus membuka kunci aplikasi
+    if (item.isConfirmed) {
+      requireAdmin(() => {
+        executeToggleConfirmation(item, false);
+      });
+      return;
+    }
+
+    // Jika belum dikonfirmasi, langsung konfirmasi (terbuka untuk pegawai tanpa kunci)
+    executeToggleConfirmation(item, true);
+  };
+
+  const executeToggleConfirmation = (item: PayrollItem, newConfirmed: boolean) => {
+    if (!activePeriod) return;
     const now = new Date().toLocaleString('id-ID', {
       day: '2-digit',
       month: 'short',
@@ -432,12 +447,27 @@ export default function App() {
     showToast(
       newConfirmed
         ? `✓ Penerimaan gaji ${item.nama} telah dikonfirmasi!`
-        : `Konfirmasi penerimaan gaji ${item.nama} dibatalkan.`
+        : `Konfirmasi penerimaan gaji ${item.nama} berhasil dibatalkan.`
     );
   };
 
-  // Simpan Feedback / Ulasan Pegawai (TIDAK DIKUNCI ADMIN)
+  // Simpan Feedback / Ulasan Pegawai
+  // Catatan: Pengisian/edit ulasan dan konfirmasi penerimaan terbuka untuk pegawai, namun membatalkan konfirmasi yang sudah ada harus membuka kunci aplikasi.
   const handleSaveFeedback = (commentText: string, isConfirmed?: boolean) => {
+    if (!activePeriod || !feedbackModalItem) return;
+
+    // Jika awalnya sudah dikonfirmasi dan pengguna membatalkannya, memerlukan pembukaan kunci admin
+    if (feedbackModalItem.isConfirmed && isConfirmed === false && !isUnlocked) {
+      requireAdmin(() => {
+        executeSaveFeedback(commentText, isConfirmed);
+      });
+      return;
+    }
+
+    executeSaveFeedback(commentText, isConfirmed);
+  };
+
+  const executeSaveFeedback = (commentText: string, isConfirmed?: boolean) => {
     if (!activePeriod || !feedbackModalItem) return;
     const now = new Date().toLocaleString('id-ID', {
       day: '2-digit',
@@ -1316,12 +1346,15 @@ export default function App() {
                               }`}
                               title={
                                 item.isConfirmed
-                                  ? `Status: Telah Diterima (${item.confirmedAt || 'Sudah Konfirmasi'}). Klik untuk membatalkan.`
+                                  ? `Status: Telah Diterima (${item.confirmedAt || 'Sudah Konfirmasi'}). Klik untuk membatalkan${!isUnlocked ? ' (Memerlukan buka kunci aplikasi)' : ''}.`
                                   : 'Klik ceklis ini untuk konfirmasi penerimaan gaji'
                               }
                             >
                               <Check className={`w-3.5 h-3.5 ${item.isConfirmed ? 'stroke-[2.5]' : 'text-slate-400'}`} />
                               <span>{item.isConfirmed ? 'Diterima' : 'Konfirmasi'}</span>
+                              {item.isConfirmed && !isUnlocked && (
+                                <Lock className="w-2.5 h-2.5 text-emerald-200 ml-0.5" />
+                              )}
                             </button>
 
                             <button
@@ -1530,7 +1563,7 @@ export default function App() {
         onRestore={handleRestoreDatabase}
       />
 
-      {/* MODAL FEEDBACK & KONFIRMASI PENERIMAAN PEGAWAI (TIDAK DIKUNCI ADMIN) */}
+      {/* MODAL FEEDBACK & KONFIRMASI PENERIMAAN PEGAWAI */}
       <EmployeeFeedbackModal
         isOpen={isFeedbackModalOpen}
         item={feedbackModalItem}
@@ -1540,6 +1573,8 @@ export default function App() {
           setFeedbackModalItem(null);
         }}
         onSave={handleSaveFeedback}
+        requireAdmin={requireAdmin}
+        isUnlocked={isUnlocked}
       />
 
       {/* MODAL LIHAT & UPLOAD DATA ASLI PAYROLL KE BANK (PDF) */}
