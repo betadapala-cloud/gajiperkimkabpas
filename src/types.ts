@@ -22,6 +22,13 @@ export interface PayrollItem {
   feedbackAt?: string;
 }
 
+export interface BankPayrollPdf {
+  fileName: string;
+  fileSize: number;
+  uploadedAt: string;
+  dataUrl?: string;
+}
+
 export interface PayrollPeriod {
   id: string;
   month: number; // 1 - 12
@@ -31,6 +38,7 @@ export interface PayrollPeriod {
   items: PayrollItem[];
   tanggalPenyaluran?: string;
   catatan?: string;
+  bankPayrollPdf?: BankPayrollPdf | null;
 }
 
 export interface ReportSettings {

@@ -20,6 +20,8 @@ import { SettingsModal } from './components/SettingsModal';
 import { AuthModal } from './components/AuthModal';
 import { DatabaseBackupModal } from './components/DatabaseBackupModal';
 import { EmployeeFeedbackModal } from './components/EmployeeFeedbackModal';
+import { BankPayrollPdfModal } from './components/BankPayrollPdfModal';
+import { saveBankPdfToStorage, deleteBankPdfFromStorage } from './utils/bankPdfStorage';
 
 import {
   FileSpreadsheet,
@@ -51,6 +53,8 @@ import {
   RefreshCw,
   Database,
   MessageSquare,
+  FileText,
+  Eye,
 } from 'lucide-react';
 
 export default function App() {
@@ -157,6 +161,8 @@ export default function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [feedbackModalItem, setFeedbackModalItem] = useState<PayrollItem | null>(null);
+  const [isBankPdfModalOpen, setIsBankPdfModalOpen] = useState(false);
+  const bankPdfToolbarInputRef = React.useRef<HTMLInputElement>(null);
   const [isFirestoreConnected, setIsFirestoreConnected] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoadedFromServer, setIsLoadedFromServer] = useState(false);
@@ -472,6 +478,85 @@ export default function App() {
     showToast(`Ulasan dan konfirmasi untuk ${feedbackModalItem.nama} berhasil disimpan!`);
   };
 
+  // Upload Berkas PDF Data Asli Payroll ke Bank untuk Periode Aktif
+  const handleUploadBankPdf = async (file: File) => {
+    if (!activePeriod) return;
+    const now = new Date().toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const dataUrl = reader.result as string;
+          const pdfMeta = {
+            fileName: file.name,
+            fileSize: file.size,
+            uploadedAt: now,
+            dataUrl,
+          };
+
+          // Simpan ke storage (IndexedDB + Firestore dokumen terpisah)
+          await saveBankPdfToStorage(activePeriod.id, pdfMeta);
+
+          // Update data periode saat ini
+          setDataByCategory((prev) => {
+            const periods = prev[activeCategory] || [];
+            const updated = periods.map((p) => {
+              if (p.id === activePeriod.id) {
+                return {
+                  ...p,
+                  bankPayrollPdf: {
+                    fileName: file.name,
+                    fileSize: file.size,
+                    uploadedAt: now,
+                    // Sertakan dataUrl di state memori lokal agar langsung tampil
+                    dataUrl: dataUrl.length < 250000 ? dataUrl : '',
+                  },
+                };
+              }
+              return p;
+            });
+            return { ...prev, [activeCategory]: updated };
+          });
+
+          showToast(`Berkas PDF data asli Payroll ke Bank (${file.name}) berhasil diunggah!`);
+          setIsBankPdfModalOpen(true);
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Hapus Berkas PDF Data Asli Payroll ke Bank untuk Periode Aktif
+  const handleDeleteBankPdf = async () => {
+    if (!activePeriod) return;
+    await deleteBankPdfFromStorage(activePeriod.id);
+    setDataByCategory((prev) => {
+      const periods = prev[activeCategory] || [];
+      const updated = periods.map((p) => {
+        if (p.id === activePeriod.id) {
+          return {
+            ...p,
+            bankPayrollPdf: null,
+          };
+        }
+        return p;
+      });
+      return { ...prev, [activeCategory]: updated };
+    });
+    showToast('Berkas PDF data asli payroll ke bank berhasil dihapus.');
+  };
+
   // Import Excel Success
   const handleImportSuccess = (newItems: PayrollItem[], mode: 'replace' | 'append') => {
     if (!activePeriod) return;
@@ -626,10 +711,10 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-bold tracking-tight leading-tight">
-                Sistem Penyaluran Gaji Pegawai
+                Sistem Tanda Terima Gaji & TPP Elektronik
               </h1>
               <p className="text-[11px] text-slate-400">
-                Rekapitulasi Nilai Kotor, Potongan & Nilai Bersih
+                Dinas Perumahan dan Kawasan Permukiman Kab Pasuruan
               </p>
             </div>
           </div>
@@ -845,6 +930,20 @@ export default function App() {
                 <span className="hidden sm:inline">Excel</span>
               </button>
 
+              {/* Data Asli Payroll ke Bank (PDF) */}
+              <button
+                type="button"
+                onClick={() => setIsBankPdfModalOpen(true)}
+                className="px-3.5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-1.5"
+                title="Lihat berkas PDF data asli payroll ke Bank (Bank Jatim / Bank Mina Mandiri)"
+              >
+                <FileText className="w-4 h-4 text-indigo-200" />
+                <span>Data Asli Payroll Bank (PDF)</span>
+                {activePeriod?.bankPayrollPdf && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                )}
+              </button>
+
               {/* Cetak */}
               <button
                 onClick={() => window.print()}
@@ -853,6 +952,19 @@ export default function App() {
               >
                 <Printer className="w-4 h-4" />
               </button>
+
+              {/* Input file tersembunyi untuk toolbar upload cepat */}
+              <input
+                ref={bankPdfToolbarInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleUploadBankPdf(e.target.files[0]);
+                  }
+                }}
+              />
             </div>
           </div>
 
@@ -1011,6 +1123,56 @@ export default function App() {
             <p className="text-xs font-semibold text-slate-600 uppercase">
               BULAN: <span className="text-slate-900 font-bold">{activePeriod?.title.toUpperCase()}</span>
             </p>
+          </div>
+
+          {/* BANNER DATA ASLI PAYROLL KE BANK (PDF) SESUAI PERMINTAAN */}
+          <div className="bg-gradient-to-r from-indigo-50/90 via-blue-50/90 to-indigo-50/90 border border-indigo-200/90 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 print-hide shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-xs shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    Data Asli Payroll ke Bank:
+                  </span>
+                  {activePeriod?.bankPayrollPdf ? (
+                    <span className="text-xs font-semibold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1 font-sans">
+                      <Check className="w-3 h-3 text-emerald-600 stroke-[3]" /> {activePeriod.bankPayrollPdf.fileName}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-medium text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+                      Belum ada berkas PDF yang diunggah
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Dokumen asli bukti penyaluran data payroll ke Bank (Bank Jatim / Bank Mina Mandiri) untuk periode ini
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setIsBankPdfModalOpen(true)}
+                className="flex-1 sm:flex-none px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs hover:shadow transition flex items-center justify-center gap-1.5"
+                title="Klik tombol untuk melihat pdf yang diupload tentang data Payroll ke Bank"
+              >
+                <Eye className="w-4 h-4 text-indigo-200" />
+                <span>Lihat Data Asli Payroll ke Bank (PDF)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => requireAdmin(() => bankPdfToolbarInputRef.current?.click())}
+                className="px-3 py-2 text-xs font-semibold text-indigo-900 bg-white hover:bg-indigo-50 border border-indigo-300 rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5"
+                title={isUnlocked ? "Upload berkas PDF" : "Terkunci: Memerlukan sandi admin untuk mengunggah PDF"}
+              >
+                <Upload className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Upload PDF</span>
+              </button>
+            </div>
           </div>
 
           {/* Search bar & info atas tabel */}
@@ -1269,7 +1431,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 print-hide text-center">
-        <p>Aplikasi Penyaluran Gaji Pegawai • Mendukung Gaji Paruh Waktu, Gaji PNS, Gaji PPPK, dan TPP PNS • Copyright @joko92m</p>
+        <p>Aplikasi Tanda Terima Gaji dan TPP Pegawai Secara Elektronik • Mendukung Gaji Paruh Waktu, Gaji PNS, Gaji PPPK, dan TPP PNS • Copyright @joko92m</p>
       </footer>
 
       {/* MODAL AUTENTIKASI ADMIN (user: admin, password: djoko92m) */}
@@ -1378,6 +1540,18 @@ export default function App() {
           setFeedbackModalItem(null);
         }}
         onSave={handleSaveFeedback}
+      />
+
+      {/* MODAL LIHAT & UPLOAD DATA ASLI PAYROLL KE BANK (PDF) */}
+      <BankPayrollPdfModal
+        isOpen={isBankPdfModalOpen}
+        onClose={() => setIsBankPdfModalOpen(false)}
+        period={activePeriod}
+        categoryName={CATEGORIES.find((c) => c.id === activeCategory)?.name || activeCategory}
+        onUploadPdf={handleUploadBankPdf}
+        onDeletePdf={handleDeleteBankPdf}
+        requireAdmin={requireAdmin}
+        isUnlocked={isUnlocked}
       />
     </div>
   );
