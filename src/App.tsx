@@ -844,20 +844,7 @@ export default function App() {
               <span className={`w-2 h-2 rounded-full ${gdriveConnected ? 'bg-blue-400 animate-pulse' : 'bg-amber-400'} hidden lg:inline`}></span>
             </button>
 
-            {/* Status Sinkronisasi Database Bersama Cloud Firestore */}
-            <button
-              onClick={handleManualSync}
-              disabled={isSyncingManual}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-600/50 rounded-xl transition"
-              title="Cloud Firestore Terpusat: data otomatis tersinkronisasi realtime ke semua orang di browser atau perangkat manapun. Klik untuk menyinkronkan ulang."
-            >
-              <Cloud className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="hidden md:inline">
-                {syncStatus === 'saving' ? 'Menyimpan ke Cloud...' : 'Cloud Firestore'}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse hidden md:inline"></span>
-              <RefreshCw className={`w-3 h-3 text-emerald-300 ${isSyncingManual ? 'animate-spin' : ''}`} />
-            </button>
+
 
             {/* Tombol Backup / Restore Database Keseluruhan */}
             <button
@@ -1641,6 +1628,10 @@ export default function App() {
           dataByCategory,
         }}
         onRestore={handleRestoreDatabase}
+        syncStatus={syncStatus}
+        isSyncingManual={isSyncingManual}
+        onManualSync={handleManualSync}
+        isFirestoreConnected={isFirestoreConnected}
       />
 
       {/* MODAL FEEDBACK & KONFIRMASI PENERIMAAN PEGAWAI */}
