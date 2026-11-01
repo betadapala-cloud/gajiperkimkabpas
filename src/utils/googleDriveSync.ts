@@ -32,7 +32,7 @@ export function isGoogleDriveConnected(): boolean {
 /**
  * Meminta token akses Google Drive menggunakan Google Identity Services (GIS)
  */
-export function requestGoogleDriveAuth(): Promise<string> {
+export function requestGoogleDriveAuth(silent = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') {
       reject(new Error('Window tidak tersedia'));
@@ -47,23 +47,24 @@ export function requestGoogleDriveAuth(): Promise<string> {
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        initAndRequestToken(resolve, reject);
+        initAndRequestToken(resolve, reject, silent);
       };
       script.onerror = () => reject(new Error('Gagal memuat Google Identity Services'));
       document.head.appendChild(script);
       return;
     }
 
-    initAndRequestToken(resolve, reject);
+    initAndRequestToken(resolve, reject, silent);
   });
 }
 
-function initAndRequestToken(resolve: (token: string) => void, reject: (err: any) => void) {
+function initAndRequestToken(resolve: (token: string) => void, reject: (err: any) => void, silent = false) {
   try {
     const google = (window as any).google;
     const client = google.accounts.oauth2.initTokenClient({
       client_id: (firebaseConfig as any).oAuthClientId || '',
       scope: 'https://www.googleapis.com/auth/drive',
+      login_hint: 'jokomardiyanto92@gmail.com',
       callback: (response: any) => {
         if (response.error) {
           reject(new Error(response.error));
@@ -74,7 +75,7 @@ function initAndRequestToken(resolve: (token: string) => void, reject: (err: any
         resolve(token);
       },
     });
-    client.requestAccessToken({ prompt: '' });
+    client.requestAccessToken({ prompt: silent ? 'none' : '' });
   } catch (err) {
     reject(err);
   }

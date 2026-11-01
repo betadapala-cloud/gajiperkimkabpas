@@ -200,7 +200,7 @@ export default function App() {
       if (isMounted) setIsFirestoreConnected(ok);
     });
 
-    // Coba baca dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung
+    // Coba baca dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung, atau coba autentikasi senyap untuk jokomardiyanto92@gmail.com
     if (isGoogleDriveConnected()) {
       readDatabaseFromGoogleDrive().then((driveData) => {
         if (driveData && isMounted) {
@@ -211,6 +211,21 @@ export default function App() {
           if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
           setIsLoadedFromServer(true);
         }
+      }).catch(() => {});
+    } else {
+      // Coba hubungkan secara senyap (silent) untuk jokomardiyanto92@gmail.com
+      requestGoogleDriveAuth(true).then(() => {
+        if (isMounted) setGdriveConnected(true);
+        readDatabaseFromGoogleDrive().then((driveData) => {
+          if (driveData && isMounted) {
+            isRemoteUpdateRef.current = true;
+            if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
+            if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
+            if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
+            if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
+            setIsLoadedFromServer(true);
+          }
+        }).catch(() => {});
       }).catch(() => {});
     }
 
