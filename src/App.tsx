@@ -22,6 +22,7 @@ import { DatabaseBackupModal } from './components/DatabaseBackupModal';
 import { EmployeeFeedbackModal } from './components/EmployeeFeedbackModal';
 import { BankPayrollPdfModal } from './components/BankPayrollPdfModal';
 import { saveBankPdfToStorage, deleteBankPdfFromStorage } from './utils/bankPdfStorage';
+import { saveDatabaseToGoogleDrive, readDatabaseFromGoogleDrive, requestGoogleDriveAuth, isGoogleDriveConnected } from './utils/googleDriveSync';
 
 import {
   FileSpreadsheet,
@@ -55,6 +56,7 @@ import {
   MessageSquare,
   FileText,
   Eye,
+  HardDrive,
 } from 'lucide-react';
 
 export default function App() {
@@ -168,16 +170,49 @@ export default function App() {
   const [isLoadedFromServer, setIsLoadedFromServer] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'offline'>('synced');
   const [isSyncingManual, setIsSyncingManual] = useState(false);
+  const [gdriveConnected, setGdriveConnected] = useState(() => isGoogleDriveConnected());
+
+  const handleConnectGoogleDrive = async () => {
+    try {
+      showToast('Menghubungkan ke Google Drive (Folder DATABASE GAJIPERKIM)...');
+      await requestGoogleDriveAuth();
+      setGdriveConnected(true);
+      const driveData = await readDatabaseFromGoogleDrive();
+      if (driveData) {
+        if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
+        if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
+        if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
+        if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
+      }
+      showToast('Berhasil terhubung ke Google Drive! Sinkronisasi otomatis DATABASE GAJIPERKIM aktif.');
+    } catch (err) {
+      showToast('Gagal menghubungkan Google Drive. Periksa izin akses Anda.');
+    }
+  };
 
   const isRemoteUpdateRef = React.useRef(false);
 
-  // 1. Sinkronisasi Real-Time dengan Cloud Firestore terpusat
+  // 1. Sinkronisasi Real-Time dengan Cloud Firestore terpusat & Google Drive
   // Setiap orang yang membuka aplikasi akan langsung menampilkan data yang sama
   useEffect(() => {
     let isMounted = true;
     testConnection().then((ok) => {
       if (isMounted) setIsFirestoreConnected(ok);
     });
+
+    // Coba baca dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung
+    if (isGoogleDriveConnected()) {
+      readDatabaseFromGoogleDrive().then((driveData) => {
+        if (driveData && isMounted) {
+          isRemoteUpdateRef.current = true;
+          if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
+          if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
+          if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
+          if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
+          setIsLoadedFromServer(true);
+        }
+      }).catch(() => {});
+    }
 
     const unsubscribe = subscribeToFirestorePayroll(
       (remotePayload) => {
@@ -231,7 +266,7 @@ export default function App() {
     localStorage.setItem('payroll_is_unlocked', isUnlocked ? 'true' : 'false');
   }, [isUnlocked]);
 
-  // 3. Simpan perubahan ke Cloud Firestore terpusat (dan cadangkan ke server backend)
+  // 3. Simpan perubahan ke Cloud Firestore terpusat & Google Drive (DATABASE GAJIPERKIM)
   useEffect(() => {
     if (!isLoadedFromServer) return;
     if (isRemoteUpdateRef.current) {
@@ -248,7 +283,16 @@ export default function App() {
         dataByCategory,
         lastUpdated: Date.now(),
       };
+      try {
+        localStorage.setItem('payroll_last_updated', String(payload.lastUpdated));
+      } catch {}
       const success = await saveToCloudFirestore(payload);
+
+      // Simpan juga ke Google Drive (FOLDER DATABASE GAJIPERKIM) secara latar belakang tanpa terlihat
+      if (isGoogleDriveConnected()) {
+        saveDatabaseToGoogleDrive(payload).catch(() => {});
+      }
+
       // Minimum display duration to prevent fast flickering/blinking
       setTimeout(() => {
         setSyncStatus(success ? 'synced' : 'offline');
@@ -782,6 +826,23 @@ export default function App() {
                 </span>
               </button>
             )}
+
+            {/* Status Sinkronisasi Google Drive (FOLDER DATABASE GAJIPERKIM) */}
+            <button
+              onClick={handleConnectGoogleDrive}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-xl transition ${
+                gdriveConnected
+                  ? 'text-blue-300 bg-blue-950/70 hover:bg-blue-900 border-blue-600/50'
+                  : 'text-amber-300 bg-amber-950/70 hover:bg-amber-900 border-amber-600/50'
+              }`}
+              title="Google Drive (Folder DATABASE GAJIPERKIM): sinkronisasi otomatis latar belakang. Klik untuk menghubungkan akun Google Drive."
+            >
+              <HardDrive className={`w-3.5 h-3.5 ${gdriveConnected ? 'text-blue-400' : 'text-amber-400'} shrink-0`} />
+              <span className="hidden lg:inline">
+                {gdriveConnected ? 'Google Drive (Aktif)' : 'Hubungkan Drive'}
+              </span>
+              <span className={`w-2 h-2 rounded-full ${gdriveConnected ? 'bg-blue-400 animate-pulse' : 'bg-amber-400'} hidden lg:inline`}></span>
+            </button>
 
             {/* Status Sinkronisasi Database Bersama Cloud Firestore */}
             <button

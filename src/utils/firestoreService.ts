@@ -47,14 +47,46 @@ export function subscribeToFirestorePayroll(
     docRef,
     async (snapshot: DocumentSnapshot) => {
       try {
+        let localPayload: SharedDatabasePayload | null = null;
+        try {
+          const rawData = localStorage.getItem('payroll_data_by_category');
+          const rawSettings = localStorage.getItem('payroll_settings_by_category');
+          const rawCat = localStorage.getItem('payroll_active_category');
+          const rawPeriods = localStorage.getItem('payroll_active_period_ids');
+          if (rawData) {
+            localPayload = {
+              activeCategory: (rawCat as any) || 'paruh-waktu',
+              activePeriodIdByCategory: rawPeriods ? JSON.parse(rawPeriods) : {},
+              settingsByCategory: rawSettings ? JSON.parse(rawSettings) : {},
+              dataByCategory: JSON.parse(rawData),
+              lastUpdated: parseInt(localStorage.getItem('payroll_last_updated') || '0', 10),
+            };
+          }
+        } catch {}
+
         if (snapshot.exists()) {
-          const data = snapshot.data() as SharedDatabasePayload;
-          onData(data);
+          const remoteData = snapshot.data() as SharedDatabasePayload;
+          const remoteTime = remoteData.lastUpdated || 0;
+          const localTime = localPayload?.lastUpdated || 0;
+
+          if (localTime > remoteTime && localPayload) {
+            // Data lokal lebih baru, simpan ke Firestore agar Firestore selalu menggunakan data terbaru
+            await setDoc(docRef, sanitizeForFirestore(localPayload));
+            onData(localPayload);
+          } else {
+            // Data remote sama atau lebih baru, gunakan remote data
+            onData(remoteData);
+          }
         } else {
-          // Inisialisasi awal ke Cloud Firestore jika dokumen belum ada
-          const initialData = getDefaultDatabasePayload();
-          await setDoc(docRef, initialData);
-          onData(initialData);
+          // Dokumen belum ada di Firestore, periksa apakah ada data lokal yang valid
+          if (localPayload && localPayload.dataByCategory && Object.keys(localPayload.dataByCategory).length > 0) {
+            await setDoc(docRef, sanitizeForFirestore(localPayload));
+            onData(localPayload);
+          } else {
+            const initialData = getDefaultDatabasePayload();
+            await setDoc(docRef, sanitizeForFirestore(initialData));
+            onData(initialData);
+          }
         }
       } catch (err) {
         console.error('Error processing Firestore snapshot:', err);
