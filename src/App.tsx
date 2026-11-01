@@ -328,15 +328,17 @@ export default function App() {
 
   // Totals
   const totals = useMemo(() => {
-    if (!activePeriod) return { kotor: 0, potongan: 0, bersih: 0, count: 0 };
+    if (!activePeriod) return { kotor: 0, potongan: 0, bersih: 0, count: 0, confirmedCount: 0 };
     const kotor = activePeriod.items.reduce((sum, item) => sum + item.gajiKotor, 0);
     const potongan = activePeriod.items.reduce((sum, item) => sum + item.potongan, 0);
     const bersih = activePeriod.items.reduce((sum, item) => sum + item.gajiBersih, 0);
+    const confirmedCount = activePeriod.items.filter((item) => item.isConfirmed).length;
     return {
       kotor,
       potongan,
       bersih,
       count: activePeriod.items.length,
+      confirmedCount,
     };
   }, [activePeriod]);
 
@@ -1018,7 +1020,7 @@ export default function App() {
         </div>
 
         {/* Stats Cards Ringkasan */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-hide">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 print-hide">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
             <div className="flex items-center justify-between text-slate-500 mb-1">
               <span className="text-[11px] font-bold uppercase tracking-wider">
@@ -1084,6 +1086,23 @@ export default function App() {
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
               Kategori: <span className="font-semibold text-emerald-600">{CATEGORIES.find(c => c.id === activeCategory)?.name}</span>
+            </p>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs col-span-2 md:col-span-1">
+            <div className="flex items-center justify-between text-slate-500 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                Sudah Konfirmasi
+              </span>
+              <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-lg sm:text-xl font-extrabold text-emerald-700">
+              {totals.confirmedCount} <span className="text-xs font-normal text-slate-500">/ {totals.count} Orang</span>
+            </p>
+            <p className="text-[11px] text-emerald-600 mt-0.5 font-medium">
+              {totals.count > 0 ? `${Math.round((totals.confirmedCount / totals.count) * 100)}% telah menerima` : '0%'}
             </p>
           </div>
         </div>

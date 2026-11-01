@@ -62,7 +62,7 @@ export function subscribeToFirestorePayroll(
       }
     },
     (error: FirestoreError) => {
-      handleFirestoreError(error, OperationType.GET, FIRESTORE_DOC_PATH);
+      console.warn('Firestore subscription offline / unreachable, using local cache:', error.message);
       if (onError) onError(error);
     }
   );
