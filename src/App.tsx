@@ -178,13 +178,27 @@ export default function App() {
       await requestGoogleDriveAuth();
       setGdriveConnected(true);
       const driveData = await readDatabaseFromGoogleDrive();
-      if (driveData) {
+      const localTime = parseInt(localStorage.getItem('payroll_last_updated') || '0', 10);
+      const driveTime = driveData?.lastUpdated || 0;
+
+      if (driveData && driveTime > localTime) {
         if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
         if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
         if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
         if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
+        localStorage.setItem('payroll_last_updated', String(driveTime));
+        showToast('Berhasil terhubung! Database dipulihkan otomatis dari Google Drive.');
+      } else {
+        const payload: SharedDatabasePayload = {
+          activeCategory,
+          activePeriodIdByCategory,
+          settingsByCategory,
+          dataByCategory,
+          lastUpdated: localTime || Date.now(),
+        };
+        await saveDatabaseToGoogleDrive(payload);
+        showToast('Berhasil terhubung ke Google Drive! Backup otomatis DATABASE GAJIPERKIM aktif.');
       }
-      showToast('Berhasil terhubung ke Google Drive! Sinkronisasi otomatis DATABASE GAJIPERKIM aktif.');
     } catch (err) {
       showToast('Gagal menghubungkan Google Drive. Periksa izin akses Anda.');
     }
@@ -200,16 +214,30 @@ export default function App() {
       if (isMounted) setIsFirestoreConnected(ok);
     });
 
-    // Coba baca dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung
+    // Coba baca & otomatis restore/backup dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung
     if (isGoogleDriveConnected()) {
-      readDatabaseFromGoogleDrive().then((driveData) => {
-        if (driveData && isMounted) {
+      readDatabaseFromGoogleDrive().then(async (driveData) => {
+        if (!isMounted) return;
+        const localTime = parseInt(localStorage.getItem('payroll_last_updated') || '0', 10);
+        const driveTime = driveData?.lastUpdated || 0;
+
+        if (driveData && driveTime > localTime) {
           isRemoteUpdateRef.current = true;
           if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
           if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
           if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
           if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
+          localStorage.setItem('payroll_last_updated', String(driveTime));
           setIsLoadedFromServer(true);
+        } else if (!driveData && localTime > 0) {
+          const payload: SharedDatabasePayload = {
+            activeCategory,
+            activePeriodIdByCategory,
+            settingsByCategory,
+            dataByCategory,
+            lastUpdated: localTime,
+          };
+          await saveDatabaseToGoogleDrive(payload).catch(() => {});
         }
       }).catch(() => {});
     }
