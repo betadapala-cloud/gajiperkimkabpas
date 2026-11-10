@@ -29,17 +29,17 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
+      <div className="relative w-full max-w-sm bg-slate-900 text-slate-100 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 text-white border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg">
+            <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/30">
               <Lock className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-semibold">Buka Kunci Pengeditan</h3>
-              <p className="text-xs text-slate-300">Autentikasi Pengelola Sistem</p>
+              <p className="text-xs text-slate-400">Autentikasi Pengelola Sistem</p>
             </div>
           </div>
           <button
@@ -52,19 +52,19 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-400">
             Masukkan username dan password administrator untuk membuka hak akses pengeditan data.
           </p>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-rose-700 text-xs">
-              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="p-3 bg-rose-950/70 border border-rose-800/60 rounded-xl flex items-start gap-2 text-rose-300 text-xs">
+              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Username
             </label>
             <input
@@ -73,13 +73,13 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder=""
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:bg-white outline-none transition font-medium"
+              placeholder="Username admin"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-800 text-white border border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition font-medium placeholder-slate-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Password
             </label>
             <input
@@ -87,8 +87,8 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder=""
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:bg-white outline-none transition font-mono"
+              placeholder="Password admin"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-800 text-white border border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition font-mono placeholder-slate-500"
             />
           </div>
 
@@ -96,15 +96,15 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-xl"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 active:bg-black rounded-xl shadow-md transition flex items-center gap-1.5"
+              className="px-5 py-2.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 rounded-xl shadow-md transition flex items-center gap-1.5"
             >
-              <KeyRound className="w-4 h-4 text-amber-400" />
+              <KeyRound className="w-4 h-4 text-slate-950" />
               <span>Buka Kunci Edit</span>
             </button>
           </div>

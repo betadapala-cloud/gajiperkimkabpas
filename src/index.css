@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+@layer base {
+  body {
+    background-color: #020617;
+    color: #f1f5f9;
+  }
+}
+
+/* Custom subtle scrollbar for tables on dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 @layer utilities {
   @media print {
     body {
@@ -19,12 +42,26 @@
     .printable-table {
       width: 100% !important;
       border-collapse: collapse !important;
+      background-color: white !important;
+      color: black !important;
     }
 
     .printable-table th,
     .printable-table td {
       border: 1px solid #111827 !important;
       padding: 6px 8px !important;
+      background-color: white !important;
+      color: black !important;
+    }
+
+    .printable-table thead tr th {
+      background-color: #D9D9D9 !important;
+      color: black !important;
+    }
+
+    .printable-table tfoot tr td {
+      background-color: white !important;
+      color: black !important;
     }
 
     .printable-area {
@@ -36,7 +73,13 @@
       padding: 0;
       border: none !important;
       box-shadow: none !important;
+      background-color: white !important;
+      color: black !important;
+    }
+
+    .printable-area * {
+      color: black !important;
+      border-color: #111827 !important;
     }
   }
 }
-

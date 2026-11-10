@@ -22,7 +22,6 @@ import { DatabaseBackupModal } from './components/DatabaseBackupModal';
 import { EmployeeFeedbackModal } from './components/EmployeeFeedbackModal';
 import { BankPayrollPdfModal } from './components/BankPayrollPdfModal';
 import { saveBankPdfToStorage, deleteBankPdfFromStorage } from './utils/bankPdfStorage';
-import { saveDatabaseToGoogleDrive, readDatabaseFromGoogleDrive, requestGoogleDriveAuth, isGoogleDriveConnected } from './utils/googleDriveSync';
 
 import {
   FileSpreadsheet,
@@ -56,7 +55,6 @@ import {
   MessageSquare,
   FileText,
   Eye,
-  HardDrive,
 } from 'lucide-react';
 
 export default function App() {
@@ -170,77 +168,15 @@ export default function App() {
   const [isLoadedFromServer, setIsLoadedFromServer] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'offline'>('synced');
   const [isSyncingManual, setIsSyncingManual] = useState(false);
-  const [gdriveConnected, setGdriveConnected] = useState(() => isGoogleDriveConnected());
-
-  const handleConnectGoogleDrive = async () => {
-    try {
-      showToast('Menghubungkan ke Google Drive (Folder DATABASE GAJIPERKIM)...');
-      await requestGoogleDriveAuth();
-      setGdriveConnected(true);
-      const driveData = await readDatabaseFromGoogleDrive();
-      const localTime = parseInt(localStorage.getItem('payroll_last_updated') || '0', 10);
-      const driveTime = driveData?.lastUpdated || 0;
-
-      if (driveData && driveTime > localTime) {
-        if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
-        if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
-        if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
-        if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
-        localStorage.setItem('payroll_last_updated', String(driveTime));
-        showToast('Berhasil terhubung! Database dipulihkan otomatis dari Google Drive.');
-      } else {
-        const payload: SharedDatabasePayload = {
-          activeCategory,
-          activePeriodIdByCategory,
-          settingsByCategory,
-          dataByCategory,
-          lastUpdated: localTime || Date.now(),
-        };
-        await saveDatabaseToGoogleDrive(payload);
-        showToast('Berhasil terhubung ke Google Drive! Backup otomatis DATABASE GAJIPERKIM aktif.');
-      }
-    } catch (err) {
-      showToast('Gagal menghubungkan Google Drive. Periksa izin akses Anda.');
-    }
-  };
-
   const isRemoteUpdateRef = React.useRef(false);
 
-  // 1. Sinkronisasi Real-Time dengan Cloud Firestore terpusat & Google Drive
+  // 1. Sinkronisasi Real-Time dengan Cloud Firestore terpusat
   // Setiap orang yang membuka aplikasi akan langsung menampilkan data yang sama
   useEffect(() => {
     let isMounted = true;
     testConnection().then((ok) => {
       if (isMounted) setIsFirestoreConnected(ok);
     });
-
-    // Coba baca & otomatis restore/backup dari Google Drive (FOLDER DATABASE GAJIPERKIM) jika terhubung
-    if (isGoogleDriveConnected()) {
-      readDatabaseFromGoogleDrive().then(async (driveData) => {
-        if (!isMounted) return;
-        const localTime = parseInt(localStorage.getItem('payroll_last_updated') || '0', 10);
-        const driveTime = driveData?.lastUpdated || 0;
-
-        if (driveData && driveTime > localTime) {
-          isRemoteUpdateRef.current = true;
-          if (driveData.dataByCategory) setDataByCategory(driveData.dataByCategory);
-          if (driveData.settingsByCategory) setSettingsByCategory(driveData.settingsByCategory);
-          if (driveData.activeCategory) setActiveCategory(driveData.activeCategory);
-          if (driveData.activePeriodIdByCategory) setActivePeriodIdByCategory(driveData.activePeriodIdByCategory);
-          localStorage.setItem('payroll_last_updated', String(driveTime));
-          setIsLoadedFromServer(true);
-        } else if (!driveData && localTime > 0) {
-          const payload: SharedDatabasePayload = {
-            activeCategory,
-            activePeriodIdByCategory,
-            settingsByCategory,
-            dataByCategory,
-            lastUpdated: localTime,
-          };
-          await saveDatabaseToGoogleDrive(payload).catch(() => {});
-        }
-      }).catch(() => {});
-    }
 
     const unsubscribe = subscribeToFirestorePayroll(
       (remotePayload) => {
@@ -315,11 +251,6 @@ export default function App() {
         localStorage.setItem('payroll_last_updated', String(payload.lastUpdated));
       } catch {}
       const success = await saveToCloudFirestore(payload);
-
-      // Simpan juga ke Google Drive (FOLDER DATABASE GAJIPERKIM) secara latar belakang tanpa terlihat
-      if (isGoogleDriveConnected()) {
-        saveDatabaseToGoogleDrive(payload).catch(() => {});
-      }
 
       // Minimum display duration to prevent fast flickering/blinking
       setTimeout(() => {
@@ -796,35 +727,37 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2.5 text-xs animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Top Navbar */}
-      <header className="bg-slate-900 text-white border-b border-slate-800 print-hide sticky top-0 z-40 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <header className="bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-800 print-hide sticky top-0 z-40 shadow-lg">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
           {/* Logo & Judul Sistem */}
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-xl shadow-md text-white">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-sm sm:text-base font-bold tracking-tight leading-tight">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <img
+              src="/logo-dpkp.svg"
+              alt="Logo DPKP Kabupaten Pasuruan"
+              className="w-9 h-9 sm:w-11 sm:h-11 object-contain shrink-0 filter drop-shadow-md hover:scale-105 transition-transform"
+            />
+            <div className="min-w-0">
+              <h1 className="text-xs sm:text-base font-bold tracking-tight leading-tight truncate sm:whitespace-normal">
                 Sistem Tanda Terima Gaji & TPP Elektronik
               </h1>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate sm:whitespace-normal">
                 Dinas Perumahan dan Kawasan Permukiman Kab Pasuruan
               </p>
             </div>
           </div>
 
           {/* Pengunci Edit & Aksi Header */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap shrink-0">
             {/* Tombol Status Kunci Edit */}
             {isUnlocked ? (
               <button
@@ -832,87 +765,68 @@ export default function App() {
                   setIsUnlocked(false);
                   showToast('Mode edit dikunci kembali.');
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/50 rounded-xl transition"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/50 rounded-xl transition shadow-2xs"
                 title="Klik untuk mengunci mode edit"
               >
-                <Unlock className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">Mode Edit Aktif</span>
-                <span className="text-[10px] bg-emerald-700/60 px-1.5 py-0.5 rounded text-emerald-200">
+                <Unlock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="hidden md:inline">Mode Edit Aktif</span>
+                <span className="text-[10px] bg-emerald-700/60 px-1.5 py-0.5 rounded text-emerald-200 font-bold">
                   Kunci
                 </span>
               </button>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 border border-amber-600/50 rounded-xl transition"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 border border-amber-600/50 rounded-xl transition shadow-2xs"
                 title="Buka kunci edit dengan akun admin"
               >
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Terkunci</span>
-                <span className="text-[10px] bg-amber-600 text-slate-950 px-1.5 py-0.5 rounded font-bold">
+                <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-[10px] sm:text-xs bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">
                   Buka Kunci
                 </span>
               </button>
             )}
 
-            {/* Status Sinkronisasi Google Drive (FOLDER DATABASE GAJIPERKIM) */}
-            <button
-              onClick={handleConnectGoogleDrive}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium border rounded-xl transition ${
-                gdriveConnected
-                  ? 'text-blue-300 bg-blue-950/70 hover:bg-blue-900 border-blue-600/50'
-                  : 'text-amber-300 bg-amber-950/70 hover:bg-amber-900 border-amber-600/50'
-              }`}
-              title="Google Drive (Folder DATABASE GAJIPERKIM): sinkronisasi otomatis latar belakang. Klik untuk menghubungkan akun Google Drive."
-            >
-              <HardDrive className={`w-3.5 h-3.5 ${gdriveConnected ? 'text-blue-400' : 'text-amber-400'} shrink-0`} />
-              <span className="hidden lg:inline">
-                {gdriveConnected ? 'Google Drive (Aktif)' : 'Hubungkan Drive'}
-              </span>
-              <span className={`w-2 h-2 rounded-full ${gdriveConnected ? 'bg-blue-400 animate-pulse' : 'bg-amber-400'} hidden lg:inline`}></span>
-            </button>
-
-
-
             {/* Tombol Backup / Restore Database Keseluruhan */}
             <button
               onClick={() => requireAdmin(() => setIsBackupModalOpen(true))}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-2xs"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-2xs"
               title="Upload / Download Database Keseluruhan Aplikasi"
             >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Backup/Restore</span>
+              <Database className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs">Backup</span>
             </button>
 
+            {/* Pengaturan */}
             <button
               onClick={() => requireAdmin(() => setIsSettingsModalOpen(true))}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl transition"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl transition"
               title="Atur Nama Instansi, Unit Kerja & Judul Laporan"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden sm:inline">Pengaturan</span>
+              <Settings className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="hidden sm:inline text-xs">Pengaturan</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+      <main className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-5 sm:space-y-6 flex-1">
         {/* DROPDOWN KATEGORI & TOOLBAR KONTROL (PRINT HIDE) */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-slate-200 space-y-4 print-hide">
+        <div className="bg-slate-900/90 border border-slate-800 text-slate-100 p-3.5 sm:p-5 rounded-2xl shadow-md space-y-4 print-hide">
           {/* Baris 1: Dropdown 3 Kategori Gaji & Pilihan Bulan */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 sm:gap-4">
             {/* DROPDOWN 3 BAGIAN: Gaji Paruh Waktu, Gaji PNS, Gaji PPPK */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-emerald-600" />
-                  <span>Kategori:</span>
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                  <Layers className="w-4 h-4 text-emerald-400" />
+                  <span className="hidden sm:inline">Kategori:</span>
                   {!isUnlocked && (
                     <button
                       type="button"
                       onClick={() => requireAdmin(() => {})}
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300 rounded text-[10px] font-bold transition"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/80 text-amber-300 hover:bg-amber-900 border border-amber-600/50 rounded text-[10px] font-bold transition"
                       title="Kategori dikunci: Klik untuk membuka kunci dengan password admin"
                     >
                       <Lock className="w-2.5 h-2.5" />
@@ -920,7 +834,7 @@ export default function App() {
                     </button>
                   )}
                 </span>
-                <div className="relative">
+                <div className="relative flex-1 sm:flex-none min-w-[170px]">
                   <select
                     value={activeCategory}
                     onChange={(e) => {
@@ -931,10 +845,10 @@ export default function App() {
                         showToast(`Beralih ke kategori: ${CATEGORIES.find((c) => c.id === nextCat)?.name || nextCat}`);
                       });
                     }}
-                    className={`appearance-none pl-3.5 pr-9 py-2 text-sm font-extrabold rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-2xs ${
+                    className={`w-full appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm font-extrabold rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-2xs ${
                       !isUnlocked
-                        ? 'text-amber-950 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-300'
-                        : 'text-slate-900 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-300'
+                        ? 'text-amber-200 bg-amber-950/50 hover:bg-amber-950/80 border border-amber-600/50'
+                        : 'text-emerald-300 bg-slate-800 hover:bg-slate-750 border border-slate-700'
                     }`}
                     title={
                       !isUnlocked
@@ -943,14 +857,14 @@ export default function App() {
                     }
                   >
                     {CATEGORIES.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.id} className="bg-slate-900 text-slate-100">
                         {cat.name}
                       </option>
                     ))}
                   </select>
                   <ChevronDown
-                    className={`w-4 h-4 absolute right-2.5 top-3 pointer-events-none ${
-                      !isUnlocked ? 'text-amber-700' : 'text-emerald-700'
+                    className={`w-4 h-4 absolute right-2.5 top-2.5 sm:top-3 pointer-events-none ${
+                      !isUnlocked ? 'text-amber-400' : 'text-emerald-400'
                     }`}
                   />
                 </div>
@@ -958,10 +872,10 @@ export default function App() {
 
               {/* Dropdown Periode Bulan */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
                   Bulan:
                 </span>
-                <div className="relative">
+                <div className="relative min-w-[140px]">
                   <select
                     value={currentPeriodId}
                     onChange={(e) =>
@@ -970,21 +884,21 @@ export default function App() {
                         [activeCategory]: e.target.value,
                       }))
                     }
-                    className="appearance-none pl-3 pr-8 py-2 text-sm font-bold text-slate-900 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                    className="w-full appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition"
                   >
                     {currentCategoryPeriods.map((p) => (
-                      <option key={p.id} value={p.id}>
+                      <option key={p.id} value={p.id} className="bg-slate-900 text-slate-100">
                         {p.title} ({p.status})
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-2.5 top-3 pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 sm:top-3 pointer-events-none" />
                 </div>
               </div>
 
               <button
                 onClick={() => requireAdmin(() => setIsPeriodModalOpen(true))}
-                className="px-3 py-2 text-xs font-medium text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition flex items-center gap-1.5"
+                className="px-3 py-2 text-xs font-medium text-blue-300 hover:text-blue-200 bg-blue-950/70 hover:bg-blue-900 border border-blue-700/50 rounded-xl transition flex items-center gap-1.5 shrink-0"
                 title="Kelola atau buat bulan baru"
               >
                 <Calendar className="w-3.5 h-3.5" />
@@ -993,7 +907,7 @@ export default function App() {
             </div>
 
             {/* Baris 2: Tombol Aksi (Input Data, Import Excel, Ekspor PDF) */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800">
               {/* Tombol Input Data Pegawai */}
               <button
                 onClick={() =>
@@ -1002,7 +916,7 @@ export default function App() {
                     setIsInputModalOpen(true);
                   })
                 }
-                className="px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-xl shadow-md transition flex items-center gap-1.5 shrink-0"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Input Pegawai</span>
@@ -1011,38 +925,38 @@ export default function App() {
               {/* Import Excel */}
               <button
                 onClick={() => requireAdmin(() => setIsImportModalOpen(true))}
-                className="px-3.5 py-2.5 text-xs font-semibold text-emerald-900 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-semibold text-emerald-300 hover:text-emerald-200 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-700/50 rounded-xl transition flex items-center gap-1.5 shrink-0"
                 title="Import data dari Excel (.xlsx / .xls / .csv)"
               >
-                <Upload className="w-4 h-4 text-emerald-700" />
+                <Upload className="w-4 h-4 text-emerald-400" />
                 <span>Import Excel</span>
               </button>
 
               {/* Ekspor PDF */}
               <button
                 onClick={handleExportPdf}
-                className="px-3.5 py-2.5 text-xs font-semibold text-rose-900 hover:text-rose-950 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-semibold text-rose-300 hover:text-rose-200 bg-rose-950/70 hover:bg-rose-900 border border-rose-700/50 rounded-xl transition flex items-center gap-1.5 shrink-0"
                 title="Unduh laporan resmi format PDF"
               >
-                <FileDown className="w-4 h-4 text-rose-600" />
+                <FileDown className="w-4 h-4 text-rose-400" />
                 <span>Ekspor PDF</span>
               </button>
 
               {/* Ekspor Excel */}
               <button
                 onClick={handleExportExcel}
-                className="px-3 py-2.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl transition flex items-center gap-1.5"
+                className="px-3 py-2 sm:py-2.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 shrink-0"
                 title="Unduh berkas Excel"
               >
-                <FileSpreadsheet className="w-4 h-4 text-slate-600" />
-                <span className="hidden sm:inline">Excel</span>
+                <FileSpreadsheet className="w-4 h-4 text-slate-400" />
+                <span>Excel</span>
               </button>
 
               {/* Data Asli Payroll ke Bank (PDF) */}
               <button
                 type="button"
                 onClick={() => setIsBankPdfModalOpen(true)}
-                className="px-3.5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-md transition flex items-center gap-1.5 shrink-0"
                 title="Lihat berkas PDF data asli payroll ke Bank (Bank Jatim / Bank Mina Mandiri)"
               >
                 <FileText className="w-4 h-4 text-indigo-200" />
@@ -1055,7 +969,7 @@ export default function App() {
               {/* Cetak */}
               <button
                 onClick={() => window.print()}
-                className="p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-300 rounded-xl transition"
+                className="p-2 sm:p-2.5 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shrink-0"
                 title="Cetak Laporan Langsung"
               >
                 <Printer className="w-4 h-4" />
@@ -1075,122 +989,104 @@ export default function App() {
               />
             </div>
           </div>
-
-          {/* Banner status hak akses jika terkunci */}
-          {!isUnlocked && (
-            <div className="flex items-center justify-between p-2.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900">
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>
-                  <strong>Aplikasi dalam mode lihat (terkunci).</strong> Silakan buka kunci untuk mengedit atau menginput data.
-                </span>
-              </div>
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg shadow-2xs transition shrink-0 ml-2"
-              >
-                Buka Kunci
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Stats Cards Ringkasan */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 print-hide">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 print-hide">
+          <div className="bg-slate-900/90 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
                 Total Nilai Kotor
               </span>
-              <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
-                <DollarSign className="w-4 h-4" />
+              <div className="p-1 sm:p-1.5 bg-blue-950/70 text-blue-400 border border-blue-800/40 rounded-lg">
+                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold text-blue-400 font-mono tracking-tight truncate">
               Rp {formatNominal(totals.kotor)}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
               Nilai bruto sebelum potongan
             </p>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+          <div className="bg-slate-900/90 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
                 Total Potongan
               </span>
-              <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
-                <TrendingDown className="w-4 h-4" />
+              <div className="p-1 sm:p-1.5 bg-rose-950/70 text-rose-400 border border-rose-800/40 rounded-lg">
+                <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-rose-600 font-mono">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold text-rose-400 font-mono tracking-tight truncate">
               Rp {formatNominal(totals.potongan)}
             </p>
-            <p className="text-[11px] text-rose-500/80 mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-rose-400/80 mt-0.5 truncate">
               Akumulasi potongan
             </p>
           </div>
 
-          <div className="bg-emerald-900 text-white p-4 rounded-2xl shadow-xs">
-            <div className="flex items-center justify-between text-emerald-200 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+          <div className="bg-gradient-to-br from-emerald-950/90 via-slate-900 to-teal-950/90 p-3 sm:p-4 rounded-2xl border border-emerald-700/60 shadow-md">
+            <div className="flex items-center justify-between text-emerald-300 mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
                 Total Nilai Bersih
               </span>
-              <div className="p-1.5 bg-emerald-800 text-emerald-300 rounded-lg">
-                <Wallet className="w-4 h-4" />
+              <div className="p-1 sm:p-1.5 bg-emerald-900/80 text-emerald-300 rounded-lg">
+                <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-emerald-300 font-mono">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold text-emerald-300 font-mono tracking-tight truncate">
               Rp {formatNominal(totals.bersih)}
             </p>
-            <p className="text-[11px] text-emerald-200 mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-emerald-400/80 mt-0.5 truncate">
               Total disalurkan via rekening
             </p>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+          <div className="bg-slate-900/90 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
                 Jumlah Pegawai
               </span>
-              <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                <Users className="w-4 h-4" />
+              <div className="p-1 sm:p-1.5 bg-indigo-950/70 text-indigo-400 border border-indigo-800/40 rounded-lg">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-slate-900">
-              {totals.count} <span className="text-xs font-normal text-slate-500">Orang</span>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold text-slate-100 tracking-tight truncate">
+              {totals.count} <span className="text-xs font-normal text-slate-400">Orang</span>
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Kategori: <span className="font-semibold text-emerald-600">{CATEGORIES.find(c => c.id === activeCategory)?.name}</span>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+              Kategori: <span className="font-semibold text-emerald-400">{CATEGORIES.find(c => c.id === activeCategory)?.name}</span>
             </p>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs col-span-2 md:col-span-1">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider">
+          <div className="bg-slate-900/90 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-md col-span-2 md:col-span-1">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
                 Sudah Konfirmasi
               </span>
-              <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-                <CheckCircle2 className="w-4 h-4" />
+              <div className="p-1 sm:p-1.5 bg-emerald-950/70 text-emerald-400 border border-emerald-800/40 rounded-lg">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-emerald-700">
-              {totals.confirmedCount} <span className="text-xs font-normal text-slate-500">/ {totals.count} Orang</span>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold text-emerald-400 tracking-tight truncate">
+              {totals.confirmedCount} <span className="text-xs font-normal text-slate-400">/ {totals.count} Orang</span>
             </p>
-            <p className="text-[11px] text-emerald-600 mt-0.5 font-medium">
+            <p className="text-[10px] sm:text-[11px] text-emerald-400/80 mt-0.5 font-medium truncate">
               {totals.count > 0 ? `${Math.round((totals.confirmedCount / totals.count) * 100)}% telah menerima` : '0%'}
             </p>
           </div>
         </div>
 
         {/* CONTAINER TABEL UTAMA LAPORAN */}
-        <div className="bg-white rounded-2xl shadow-xs border border-slate-300 p-6 sm:p-8 space-y-6 printable-area">
+        <div className="bg-slate-900/95 rounded-2xl shadow-md border border-slate-800 p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 printable-area">
           {/* KOP SURAT & JUDUL LAPORAN (DAPAT DIEDIT REALTIME) */}
-          <div className="border-b-2 border-slate-800 pb-4 text-center">
-            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
+          <div className="border-b-2 border-slate-700 pb-4 text-center">
+            <h2 className="text-sm sm:text-base md:text-lg font-black uppercase tracking-wider text-slate-100">
               {currentSettings.instansi}
             </h2>
-            <h3 className="text-xs sm:text-sm font-semibold uppercase text-slate-700">
+            <h3 className="text-xs sm:text-sm font-semibold uppercase text-slate-300 mt-0.5">
               {currentSettings.unitKerja}
             </h3>
 
@@ -1207,26 +1103,26 @@ export default function App() {
                       if (e.key === 'Enter') handleSaveTitleInline();
                       if (e.key === 'Escape') setIsEditingTitleInline(false);
                     }}
-                    className="flex-1 px-3 py-1.5 text-xs sm:text-sm font-black uppercase text-center bg-yellow-50 border-2 border-amber-400 rounded-lg outline-none"
+                    className="flex-1 px-3 py-1.5 text-xs sm:text-sm font-black uppercase text-center bg-slate-800 text-white border-2 border-emerald-500 rounded-lg outline-none"
                   />
                   <button
                     onClick={handleSaveTitleInline}
-                    className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                    className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition"
                     title="Simpan Judul"
                   >
                     <Check className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setIsEditingTitleInline(false)}
-                    className="p-1.5 bg-slate-300 text-slate-700 rounded-lg hover:bg-slate-400 transition"
+                    className="p-1.5 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition"
                     title="Batal"
                   >
                     <CloseIcon className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <div className="group inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 border border-slate-300 rounded-md">
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900">
+                <div className="group inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-slate-800/90 border border-slate-700 rounded-md max-w-full overflow-hidden">
+                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-100 truncate">
                     {currentSettings.judulLaporan}
                   </span>
                   <button
@@ -1236,7 +1132,7 @@ export default function App() {
                         setIsEditingTitleInline(true);
                       })
                     }
-                    className="p-1 text-slate-400 hover:text-slate-900 transition rounded print-hide"
+                    className="p-1 text-slate-400 hover:text-white transition rounded print-hide shrink-0"
                     title="Klik untuk mengedit judul laporan"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -1245,43 +1141,43 @@ export default function App() {
               )}
             </div>
 
-            <p className="text-xs font-semibold text-slate-600 uppercase">
-              BULAN: <span className="text-slate-900 font-bold">{activePeriod?.title.toUpperCase()}</span>
+            <p className="text-xs font-semibold text-slate-300 uppercase">
+              BULAN: <span className="text-emerald-400 font-bold">{activePeriod?.title.toUpperCase()}</span>
             </p>
           </div>
 
-          {/* BANNER DATA ASLI PAYROLL KE BANK (PDF) SESUAI PERMINTAAN */}
-          <div className="bg-gradient-to-r from-indigo-50/90 via-blue-50/90 to-indigo-50/90 border border-indigo-200/90 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 print-hide shadow-2xs">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-xs shrink-0">
-                <FileText className="w-5 h-5" />
+          {/* BANNER DATA ASLI PAYROLL KE BANK (PDF) */}
+          <div className="bg-slate-900/90 border border-indigo-900/60 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 print-hide shadow-md">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2 sm:p-2.5 bg-indigo-950/80 text-indigo-400 border border-indigo-800/40 rounded-xl shadow-xs shrink-0 mt-0.5 sm:mt-0">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-bold text-slate-900">
+                  <span className="text-xs sm:text-sm font-bold text-slate-100">
                     Data Asli Payroll ke Bank:
                   </span>
                   {activePeriod?.bankPayrollPdf ? (
-                    <span className="text-xs font-semibold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1 font-sans">
-                      <Check className="w-3 h-3 text-emerald-600 stroke-[3]" /> {activePeriod.bankPayrollPdf.fileName}
+                    <span className="text-xs font-semibold text-emerald-300 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-700/60 flex items-center gap-1 font-sans">
+                      <Check className="w-3 h-3 text-emerald-400 stroke-[3]" /> {activePeriod.bankPayrollPdf.fileName}
                     </span>
                   ) : (
-                    <span className="text-xs font-medium text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+                    <span className="text-[11px] sm:text-xs font-medium text-amber-300 bg-amber-950/70 px-2 py-0.5 rounded-full border border-amber-700/50">
                       Belum ada berkas PDF yang diunggah
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
                   Dokumen asli bukti penyaluran data payroll ke Bank (Bank Jatim / Bank Mina Mandiri) untuk periode ini
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex items-center gap-2 shrink-0 flex-col sm:flex-row w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setIsBankPdfModalOpen(true)}
-                className="flex-1 sm:flex-none px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs hover:shadow transition flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto px-3.5 sm:px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5"
                 title="Klik tombol untuk melihat pdf yang diupload tentang data Payroll ke Bank"
               >
                 <Eye className="w-4 h-4 text-indigo-200" />
@@ -1291,32 +1187,32 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => requireAdmin(() => bankPdfToolbarInputRef.current?.click())}
-                className="px-3 py-2 text-xs font-semibold text-indigo-900 bg-white hover:bg-indigo-50 border border-indigo-300 rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto px-3 py-2 text-xs font-semibold text-indigo-300 bg-slate-800 hover:bg-slate-700 border border-indigo-700/50 rounded-xl transition flex items-center justify-center gap-1.5"
                 title={isUnlocked ? "Upload berkas PDF" : "Terkunci: Memerlukan sandi admin untuk mengunggah PDF"}
               >
-                <Upload className="w-3.5 h-3.5 text-indigo-600" />
+                <Upload className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Upload PDF</span>
               </button>
             </div>
           </div>
 
           {/* Search bar & info atas tabel */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 print-hide">
-            <div className="relative w-full sm:w-72">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 print-hide">
+            <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="Cari nama pegawai / no rekening..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-800/90 text-slate-100 border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none placeholder-slate-400"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 w-full sm:w-auto justify-end">
+            <div className="flex items-center justify-between sm:justify-end gap-2 text-xs text-slate-400 w-full sm:w-auto">
               <span>Menampilkan {filteredItems.length} dari {activePeriod?.items.length || 0} pegawai</span>
               <button
                 onClick={handleResetData}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
                 title="Reset data kategori ini ke bawaan awal"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -1324,12 +1220,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* TABEL DENGAN KOLOM JUMLAH POTONGAN (SESUAI PERMINTAAN 3) */}
-          <div className="border border-slate-900 overflow-x-auto rounded-none">
-            <table className="w-full text-xs border-collapse printable-table">
-              {/* Header Tabel persis gambar, dengan label JUMLAH POTONGAN */}
+          {/* Mobile swipe helper hint */}
+          <div className="sm:hidden flex items-center justify-between text-[11px] text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/60 print-hide">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block animate-pulse text-emerald-400 font-bold">↔</span>
+              <span>Geser tabel ke samping untuk melihat kolom lengkap</span>
+            </span>
+          </div>
+
+          {/* TABEL DENGAN KOLOM JUMLAH POTONGAN */}
+          <div className="border border-slate-700 overflow-x-auto rounded-xl">
+            <table className="w-full min-w-[780px] text-xs border-collapse printable-table">
+              {/* Header Tabel */}
               <thead>
-                <tr className="bg-[#D9D9D9] text-black font-extrabold border-b border-slate-900 divide-x divide-slate-900">
+                <tr className="bg-slate-800 text-slate-200 font-extrabold border-b border-slate-700 divide-x divide-slate-700">
                   <th className="py-3 px-3 text-center w-12 tracking-wider">
                     NO
                   </th>
@@ -1355,7 +1259,7 @@ export default function App() {
               </thead>
 
               {/* Body Rows */}
-              <tbody className="divide-y divide-slate-900 bg-white">
+              <tbody className="divide-y divide-slate-800 bg-slate-900/90 text-slate-200">
                 {filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-400 italic">
@@ -1366,19 +1270,19 @@ export default function App() {
                   filteredItems.map((item, idx) => (
                     <tr
                       key={item.id}
-                      className="divide-x divide-slate-900 hover:bg-emerald-50/40 transition group"
+                      className="divide-x divide-slate-800 hover:bg-slate-800/50 transition group"
                     >
                       {/* NO */}
-                      <td className="py-2.5 px-3 text-center font-normal text-black align-middle">
+                      <td className="py-2.5 px-3 text-center font-normal text-slate-400 align-middle">
                         {item.no || idx + 1}
                       </td>
 
                       {/* NAMA */}
-                      <td className="py-2.5 px-4 text-left font-normal text-black uppercase tracking-tight align-middle">
+                      <td className="py-2.5 px-4 text-left font-normal uppercase tracking-tight align-middle text-slate-100">
                         <div className="flex items-center justify-between gap-1 flex-wrap">
                           <span className="font-semibold">{item.nama}</span>
                           {item.keterangan && (
-                            <span className="text-[10px] text-slate-500 font-sans italic">
+                            <span className="text-[10px] text-slate-400 font-sans italic">
                               ({item.keterangan})
                             </span>
                           )}
@@ -1386,46 +1290,46 @@ export default function App() {
                       </td>
 
                       {/* NO REKENING */}
-                      <td className="py-2.5 px-4 text-center font-mono text-black relative align-middle">
-                        <span className="absolute left-1 top-1 w-0 h-0 border-t-4 border-t-emerald-600 border-r-4 border-r-transparent print-hide"></span>
+                      <td className="py-2.5 px-4 text-center font-mono text-slate-300 relative align-middle">
+                        <span className="absolute left-1 top-1 w-0 h-0 border-t-4 border-t-emerald-500 border-r-4 border-r-transparent print-hide"></span>
                         {item.noRekening}
                       </td>
 
                       {/* NILAI KOTOR */}
-                      <td className="py-2.5 px-4 text-right font-mono text-black align-middle">
+                      <td className="py-2.5 px-4 text-right font-mono text-slate-200 align-middle">
                         {formatNominal(item.gajiKotor)}
                       </td>
 
                       {/* JUMLAH POTONGAN */}
-                      <td className="py-2.5 px-4 text-right font-mono text-black align-middle">
+                      <td className="py-2.5 px-4 text-right font-mono text-rose-400 align-middle">
                         {formatNominal(item.potongan)}
                       </td>
 
                       {/* NILAI BERSIH */}
-                      <td className="py-2.5 px-4 text-right font-mono font-medium text-black align-middle">
+                      <td className="py-2.5 px-4 text-right font-mono font-bold text-emerald-300 align-middle">
                         {formatNominal(item.gajiBersih)}
                       </td>
 
                       {/* KONFIRMASI & ULASAN (Status & ulasan tampil saat print, tombol interaktif print-hide) */}
                       <td className="py-2.5 px-3 text-left align-middle">
                         <div className="space-y-1">
-                          {/* Status konfirmasi tampil saat print & screen */}
+                          {/* Status konfirmasi */}
                           <div>
                             {item.isConfirmed ? (
-                              <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded font-sans">
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-700/60 px-1.5 py-0.5 rounded font-sans">
                                 ✓ Diterima {item.confirmedAt ? `(${item.confirmedAt})` : ''}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-sans">
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-amber-300 bg-amber-950/70 border border-amber-700/50 px-1.5 py-0.5 rounded font-sans">
                                 Belum Konfirmasi
                               </span>
                             )}
                           </div>
 
-                          {/* Ulasan tampil saat print & screen jika ada */}
+                          {/* Ulasan tampil jika ada */}
                           {item.feedback && (
-                            <div className="text-[10.5px] font-sans text-blue-950 bg-blue-50 border border-blue-200 rounded px-2 py-1">
-                              <span className="font-bold text-blue-700">Ulasan:</span> "{item.feedback}" {item.feedbackAt ? `(${item.feedbackAt})` : ''}
+                            <div className="text-[10.5px] font-sans text-blue-200 bg-blue-950/70 border border-blue-800/50 rounded px-2 py-1">
+                              <span className="font-bold text-blue-400">Ulasan:</span> "{item.feedback}" {item.feedbackAt ? `(${item.feedbackAt})` : ''}
                             </div>
                           )}
 
@@ -1436,8 +1340,8 @@ export default function App() {
                               onClick={() => handleToggleConfirmation(item)}
                               className={`px-2 py-1 text-xs font-semibold rounded-md flex items-center gap-1 transition shadow-2xs ${
                                 item.isConfirmed
-                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 ring-1 ring-emerald-700/40'
-                                  : 'bg-white text-slate-700 border border-slate-300 hover:border-emerald-600 hover:text-emerald-700 hover:bg-emerald-50/60'
+                                  ? 'bg-emerald-600 text-white hover:bg-emerald-500 ring-1 ring-emerald-500/40'
+                                  : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500 hover:text-emerald-300 hover:bg-slate-750'
                               }`}
                               title={
                                 item.isConfirmed
@@ -1460,8 +1364,8 @@ export default function App() {
                               }}
                               className={`px-2 py-1 text-xs rounded-md flex items-center gap-1 border transition ${
                                 item.feedback
-                                  ? 'bg-blue-50 border-blue-300 text-blue-800 hover:bg-blue-100 font-medium'
-                                  : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-blue-700'
+                                  ? 'bg-blue-950/80 border-blue-700/60 text-blue-300 hover:bg-blue-900 font-medium'
+                                  : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750 hover:text-blue-300'
                               }`}
                               title={
                                 item.feedback
@@ -1469,17 +1373,17 @@ export default function App() {
                                   : 'Klik untuk mengisi ulasan atau konfirmasi penerimaan'
                               }
                             >
-                              <MessageSquare className={`w-3.5 h-3.5 ${item.feedback ? 'text-blue-600' : 'text-slate-400'}`} />
+                              <MessageSquare className={`w-3.5 h-3.5 ${item.feedback ? 'text-blue-400' : 'text-slate-400'}`} />
                               <span>{item.feedback ? 'Ulasan' : '+ Ulasan'}</span>
                             </button>
 
-                            <div className="flex items-center gap-0.5 pl-1 border-l border-slate-200">
+                            <div className="flex items-center gap-0.5 pl-1 border-l border-slate-700">
                               <button
                                 onClick={() => {
                                   setSlipItem(item);
                                   setIsSlipModalOpen(true);
                                 }}
-                                className="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded"
+                                className="p-1 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded transition"
                                 title="Cetak Slip Gaji Pegawai"
                               >
                                 <Receipt className="w-3.5 h-3.5" />
@@ -1491,14 +1395,14 @@ export default function App() {
                                     setIsInputModalOpen(true);
                                   })
                                 }
-                                className="p-1 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded"
+                                className="p-1 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded transition"
                                 title="Edit Data Pegawai (Khusus Admin)"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleDeleteEmployee(item.id, item.nama)}
-                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded"
+                                className="p-1 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded transition"
                                 title="Hapus Pegawai (Khusus Admin)"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1512,25 +1416,25 @@ export default function App() {
                 )}
               </tbody>
 
-              {/* Baris JUMLAH persis gambar */}
+              {/* Baris JUMLAH */}
               <tfoot>
-                <tr className="border-t-2 border-slate-900 divide-x divide-slate-900 bg-white font-extrabold text-black">
+                <tr className="border-t-2 border-slate-700 divide-x divide-slate-700 bg-slate-800 font-extrabold text-slate-100">
                   <td
                     colSpan={3}
-                    className="py-3 px-4 text-center font-extrabold tracking-wider text-black text-sm"
+                    className="py-3 px-4 text-center font-extrabold tracking-wider text-slate-100 text-sm"
                   >
                     JUMLAH
                   </td>
-                  <td className="py-3 px-4 text-right font-mono text-black font-extrabold">
+                  <td className="py-3 px-4 text-right font-mono text-slate-200 font-extrabold">
                     {formatNominal(totals.kotor)}
                   </td>
-                  <td className="py-3 px-4 text-right font-mono text-black font-extrabold">
+                  <td className="py-3 px-4 text-right font-mono text-rose-400 font-extrabold">
                     {formatNominal(totals.potongan)}
                   </td>
-                  <td className="py-3 px-4 text-right font-mono text-black font-extrabold">
+                  <td className="py-3 px-4 text-right font-mono text-emerald-300 font-extrabold">
                     {formatNominal(totals.bersih)}
                   </td>
-                  <td className="print-hide bg-slate-50"></td>
+                  <td className="print-hide bg-slate-800"></td>
                 </tr>
               </tfoot>
             </table>
@@ -1538,19 +1442,19 @@ export default function App() {
 
           {/* Terbilang & Catatan */}
           <div className="pt-2 space-y-2.5">
-            <div className="p-3 bg-slate-50 border border-slate-300 rounded text-xs">
-              <span className="font-bold text-slate-700 uppercase tracking-wider block text-[10px]">
+            <div className="p-3 bg-slate-800/80 border border-slate-700 rounded-xl text-xs">
+              <span className="font-bold text-slate-300 uppercase tracking-wider block text-[10px]">
                 Terbilang Total Nilai Bersih yang Disalurkan:
               </span>
-              <p className="font-semibold text-slate-900 italic mt-0.5">
+              <p className="font-semibold text-emerald-300 italic mt-0.5">
                 "{terbilangRupiah(totals.bersih)}"
               </p>
             </div>
 
             {/* Catatan Sesuai Permintaan */}
-            <div className="p-3 bg-amber-50/80 border border-amber-300/80 rounded text-xs text-amber-950">
+            <div className="p-3 bg-amber-950/40 border border-amber-800/50 rounded-xl text-xs text-amber-200">
               <p className="font-medium">
-                <strong className="font-bold">Catatan:</strong> Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
+                <strong className="font-bold text-amber-300">Catatan:</strong> Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).
               </p>
             </div>
           </div>
@@ -1558,7 +1462,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 print-hide text-center">
+      <footer className="bg-slate-950 text-slate-500 text-xs py-4 border-t border-slate-800 print-hide text-center">
         <p>Aplikasi Tanda Terima Gaji dan TPP Pegawai Secara Elektronik • Mendukung Gaji Paruh Waktu, Gaji PNS, Gaji PPPK, dan TPP PNS • Copyright @joko92m</p>
       </footer>
 

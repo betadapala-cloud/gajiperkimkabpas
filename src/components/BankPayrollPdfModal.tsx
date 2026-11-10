@@ -132,17 +132,17 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full flex flex-col max-h-[92vh] overflow-hidden border border-slate-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-slate-900 text-slate-100 rounded-2xl shadow-2xl max-w-5xl w-full flex flex-col max-h-[92vh] overflow-hidden border border-slate-800">
         {/* Header */}
-        <div className="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
+        <div className="bg-slate-950 text-white px-5 py-4 flex items-center justify-between shrink-0 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm sm:text-base tracking-tight">
+                <h3 className="font-bold text-sm sm:text-base tracking-tight text-white">
                   Data Asli Payroll ke Bank (PDF)
                 </h3>
                 {pdfUrl && (
@@ -169,11 +169,11 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
         </div>
 
         {/* Toolbar Aksi Atas */}
-        <div className="bg-slate-100/90 border-b border-slate-200 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
-          <div className="flex items-center gap-2 text-slate-700">
+        <div className="bg-slate-950/70 border-b border-slate-800 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
+          <div className="flex items-center gap-2 text-slate-300">
             {period.bankPayrollPdf ? (
-              <div className="flex items-center gap-2 text-slate-600 flex-wrap">
-                <span className="font-semibold text-slate-900">{period.bankPayrollPdf.fileName}</span>
+              <div className="flex items-center gap-2 text-slate-300 flex-wrap">
+                <span className="font-semibold text-white">{period.bankPayrollPdf.fileName}</span>
                 {period.bankPayrollPdf.fileSize > 0 && (
                   <span className="text-slate-400 font-mono">({formatFileSize(period.bankPayrollPdf.fileSize)})</span>
                 )}
@@ -182,9 +182,9 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
                 )}
               </div>
             ) : pdfUrl ? (
-              <span className="text-slate-600 font-medium">Dokumen Bukti Payroll Bank Periode {period.title}</span>
+              <span className="text-slate-300 font-medium">Dokumen Bukti Payroll Bank Periode {period.title}</span>
             ) : (
-              <span className="text-amber-700 font-medium flex items-center gap-1.5">
+              <span className="text-amber-400 font-medium flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5" /> Belum ada berkas PDF data asli payroll ke bank untuk periode ini
               </span>
             )}
@@ -205,7 +205,7 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
               type="button"
               disabled={isUploading}
               onClick={() => requireAdmin(() => fileInputRef.current?.click())}
-              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-2xs transition flex items-center gap-1.5 disabled:opacity-50"
+              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-2xs transition flex items-center gap-1.5 disabled:opacity-50"
               title={isUnlocked ? "Upload berkas PDF" : "Terkunci: Memerlukan sandi admin untuk mengunggah PDF"}
             >
               {isUploading ? (
@@ -226,10 +226,10 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={handleDownload}
-                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-300 rounded-lg shadow-2xs transition flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 font-semibold border border-slate-700 rounded-lg shadow-2xs transition flex items-center gap-1.5"
                 title="Unduh berkas PDF asli"
               >
-                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <Download className="w-3.5 h-3.5 text-slate-400" />
                 <span>Unduh</span>
               </button>
             )}
@@ -239,10 +239,10 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={handleOpenNewTab}
-                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-300 rounded-lg shadow-2xs transition flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 font-semibold border border-slate-700 rounded-lg shadow-2xs transition flex items-center gap-1.5"
                 title="Buka PDF di tab browser baru"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                 <span className="hidden sm:inline">Buka di Tab Baru</span>
               </button>
             )}
@@ -258,7 +258,7 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
                     }
                   })
                 }
-                className="px-2.5 py-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-lg transition flex items-center gap-1"
+                className="px-2.5 py-1.5 text-rose-300 hover:text-rose-200 hover:bg-rose-950/80 border border-rose-800/60 rounded-lg transition flex items-center gap-1"
                 title={isUnlocked ? "Hapus berkas PDF" : "Terkunci: Memerlukan sandi admin untuk menghapus PDF"}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -270,47 +270,47 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
 
         {/* Notifikasi Error jika ada */}
         {errorMessage && (
-          <div className="bg-rose-50 border-b border-rose-200 px-5 py-2 text-rose-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="bg-rose-950/80 border-b border-rose-800/60 px-5 py-2 text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {/* Area Konten Pratinjau PDF */}
-        <div className="flex-1 overflow-auto bg-slate-200/80 p-3 sm:p-5 flex items-center justify-center min-h-[400px]">
+        <div className="flex-1 overflow-auto bg-slate-950 p-3 sm:p-5 flex items-center justify-center min-h-[400px]">
           {isLoading ? (
             <div className="text-center py-12 space-y-3">
-              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto" />
-              <p className="text-xs font-semibold text-slate-600">Memuat berkas PDF data asli payroll...</p>
+              <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto" />
+              <p className="text-xs font-semibold text-slate-400">Memuat berkas PDF data asli payroll...</p>
             </div>
           ) : pdfUrl ? (
             <div className="w-full h-full flex flex-col space-y-2">
               <iframe
                 src={pdfUrl}
                 title={`Data Asli Payroll ke Bank - ${period.title}`}
-                className="w-full h-[66vh] bg-white rounded-xl border border-slate-300 shadow-sm"
+                className="w-full h-[66vh] bg-white rounded-xl border border-slate-700 shadow-sm"
               />
-              <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
                 <span>Dokumen PDF Data Asli Payroll ke Bank ({period.title})</span>
                 <button
                   onClick={handleOpenNewTab}
-                  className="text-indigo-600 hover:underline flex items-center gap-1"
+                  className="text-indigo-400 hover:underline flex items-center gap-1"
                 >
                   <ExternalLink className="w-3 h-3" /> Jika tampilan terpotong, klik untuk buka di tab penuh
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border-2 border-dashed border-slate-300 hover:border-indigo-400 p-8 sm:p-12 text-center max-w-lg w-full space-y-4 shadow-sm transition">
-              <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <div className="bg-slate-900 rounded-2xl border-2 border-dashed border-slate-800 hover:border-indigo-500/50 p-8 sm:p-12 text-center max-w-lg w-full space-y-4 shadow-sm transition">
+              <div className="w-16 h-16 bg-indigo-950/70 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto border border-indigo-800/50">
                 <FileUp className="w-8 h-8" />
               </div>
               <div className="space-y-1.5">
-                <h4 className="text-base font-bold text-slate-800">
+                <h4 className="text-base font-bold text-white">
                   Belum Ada Berkas PDF Data Asli Payroll ke Bank
                 </h4>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Unggah berkas PDF data asli laporan atau bukti penyaluran payroll ke Bank (Bank Jatim / Bank Mina Mandiri) untuk periode <strong className="text-slate-800">{period.title}</strong>.
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Unggah berkas PDF data asli laporan atau bukti penyaluran payroll ke Bank (Bank Jatim / Bank Mina Mandiri) untuk periode <strong className="text-slate-200">{period.title}</strong>.
                 </p>
               </div>
 
@@ -318,13 +318,13 @@ export const BankPayrollPdfModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => requireAdmin(() => fileInputRef.current?.click())}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2"
                 >
                   <Upload className="w-4 h-4" />
                   <span>Pilih & Upload Berkas PDF</span>
                 </button>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Format didukung: Berkas dokumen PDF (.pdf) hingga 15 MB
               </p>
             </div>

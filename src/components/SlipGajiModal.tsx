@@ -25,15 +25,15 @@ export const SlipGajiModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden">
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 text-white border-b border-slate-800 print:hidden">
           <h3 className="text-sm font-semibold">Pratinjau Slip Gaji Individu</h3>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-xs transition flex items-center gap-1.5 font-bold"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak / Print

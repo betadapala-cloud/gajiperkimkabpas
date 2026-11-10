@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Clip path untuk lingkaran dalam -->
+    <clipPath id="innerCircleClip">
+      <circle cx="250" cy="225" r="142" />
+    </clipPath>
+
+    <!-- Path untuk teks atas: DINAS PERUMAHAN & KAWASAN PERMUKIMAN -->
+    <path id="topTextPath" d="M 55 240 A 195 195 0 0 1 445 240" fill="none" />
+
+    <!-- Path untuk teks bawah: KABUPATEN PASURUAN -->
+    <path id="bottomTextPath" d="M 85 305 A 200 200 0 0 0 415 305" fill="none" />
+  </defs>
+
+  <!-- LINGKARAN / BANNER LUAR ATAS -->
+  <!-- Lengkungan pita hijau tua atas -->
+  <path
+    d="M 62 238 A 195 195 0 0 1 438 238"
+    fill="none"
+    stroke="#076639"
+    stroke-width="50"
+    stroke-linecap="round"
+  />
+
+  <!-- Teks Lengkung Atas: DINAS PERUMAHAN & KAWASAN PERMUKIMAN -->
+  <text fill="#ffffff" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-weight="900" font-size="20" letter-spacing="1.8">
+    <textPath href="#topTextPath" startOffset="50%" text-anchor="middle">
+      DINAS PERUMAHAN &amp; KAWASAN PERMUKIMAN
+    </textPath>
+  </text>
+
+  <!-- PITA / BANNER BAWAH: KABUPATEN PASURUAN -->
+  <g>
+    <!-- Bentuk pita melengkung dengan ujung pita khas -->
+    <path
+      d="M 88 335 Q 250 435 412 335 L 428 358 Q 250 460 72 358 Z"
+      fill="#076639"
+    />
+    <path
+      d="M 80 340 A 205 205 0 0 0 420 340 L 412 300 A 175 175 0 0 1 88 300 Z"
+      fill="#076639"
+    />
+    <path
+      d="M 68 348 C 110 398 175 435 250 435 C 325 435 390 398 432 348 L 416 332 C 378 376 318 410 250 410 C 182 410 122 376 84 332 Z"
+      fill="#076639"
+    />
+    
+    <!-- Path melengkung untuk teks bawah -->
+    <path id="bannerBottomPath" d="M 100 355 Q 250 432 400 355" fill="none" />
+    <text fill="#ffffff" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-weight="900" font-size="22" letter-spacing="4">
+      <textPath href="#bannerBottomPath" startOffset="50%" text-anchor="middle">
+        KABUPATEN PASURUAN
+      </textPath>
+    </text>
+  </g>
+
+  <!-- LINGKARAN TENGAH EMBLEM -->
+  <!-- Ring Putih Pemisah -->
+  <circle cx="250" cy="225" r="146" fill="#ffffff" />
+  <!-- Border Lingkaran Luar -->
+  <circle cx="250" cy="225" r="146" fill="none" stroke="#076639" stroke-width="4" />
+
+  <!-- KONTEN DALAM LINGKARAN (DENGAN CLIP PATH) -->
+  <g clip-path="url(#innerCircleClip)">
+    <!-- Langit / Background Hijau Tua -->
+    <rect x="90" y="70" width="320" height="320" fill="#076639" />
+
+    <!-- ILUSTRASI 2 RUMAH GEOMETRIS (PUTIH) -->
+    <!-- Rumah Kiri (Belakang) -->
+    <path
+      d="M 228 138 L 174 192 L 174 235 L 228 235"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 228 138 L 272 182"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Rumah Kanan (Depan) -->
+    <path
+      d="M 272 138 L 220 190 L 220 265"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 272 138 L 324 190 L 324 265"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    
+    <!-- Pintu Rumah Depan (Bentuk Rumah Segitiga/Kubah) -->
+    <path
+      d="M 272 204 L 250 226 L 250 268"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 272 204 L 294 226 L 294 268"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- BUKIT 1 (HIJAU TUA / EMERALD) -->
+    <path
+      d="M 90 205 C 130 200 180 215 225 240 C 275 268 335 250 410 220 L 410 380 L 90 380 Z"
+      fill="#008b47"
+    />
+
+    <!-- GARIS PEMISAH PUTIH 1 -->
+    <path
+      d="M 90 268 C 160 270 230 295 320 275 C 360 265 385 245 410 230"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+    />
+
+    <!-- BUKIT 2 (HIJAU MUDA / LIME) -->
+    <path
+      d="M 90 272 C 160 274 230 299 320 279 C 360 269 385 249 410 234 L 410 380 L 90 380 Z"
+      fill="#76bc21"
+    />
+
+    <!-- GARIS PEMISAH PUTIH 2 -->
+    <path
+      d="M 125 330 C 195 315 280 325 365 335"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="9"
+      stroke-linecap="round"
+    />
+
+    <!-- AIR / SUNGAI (TEAL / CYAN) -->
+    <path
+      d="M 120 335 C 195 320 280 330 365 340 C 375 355 350 380 250 380 C 180 380 135 360 120 335 Z"
+      fill="#009999"
+    />
+  </g>
+</svg>
