@@ -757,7 +757,7 @@ export default function App() {
           </div>
 
           {/* Pengunci Edit & Aksi Header */}
-          <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="grid grid-cols-3 sm:flex items-center justify-end gap-1.5 sm:gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
             {/* Tombol Status Kunci Edit */}
             {isUnlocked ? (
               <button
@@ -765,46 +765,41 @@ export default function App() {
                   setIsUnlocked(false);
                   showToast('Mode edit dikunci kembali.');
                 }}
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/50 rounded-xl transition shadow-2xs"
+                className="flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/50 rounded-xl transition shadow-2xs active:scale-95"
                 title="Klik untuk mengunci mode edit"
               >
                 <Unlock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="hidden md:inline">Mode Edit Aktif</span>
-                <span className="text-[10px] bg-emerald-700/60 px-1.5 py-0.5 rounded text-emerald-200 font-bold">
-                  Kunci
-                </span>
+                <span className="text-xs font-bold">Kunci</span>
               </button>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 border border-amber-600/50 rounded-xl transition shadow-2xs"
+                className="flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-bold text-amber-200 bg-amber-950/70 hover:bg-amber-900/90 border border-amber-600/60 rounded-xl transition shadow-2xs active:scale-95"
                 title="Buka kunci edit dengan akun admin"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="text-[10px] sm:text-xs bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">
-                  Buka Kunci
-                </span>
+                <span className="text-xs font-bold">Buka Kunci</span>
               </button>
             )}
 
             {/* Tombol Backup / Restore Database Keseluruhan */}
             <button
               onClick={() => requireAdmin(() => setIsBackupModalOpen(true))}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-2xs"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-2xs active:scale-95"
               title="Upload / Download Database Keseluruhan Aplikasi"
             >
               <Database className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs">Backup</span>
+              <span className="text-xs">Backup</span>
             </button>
 
             {/* Pengaturan */}
             <button
               onClick={() => requireAdmin(() => setIsSettingsModalOpen(true))}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl transition"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-2xs active:scale-95"
               title="Atur Nama Instansi, Unit Kerja & Judul Laporan"
             >
               <Settings className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="hidden sm:inline text-xs">Pengaturan</span>
+              <span className="text-xs">Pengaturan</span>
             </button>
           </div>
         </div>
@@ -837,6 +832,12 @@ export default function App() {
                 <div className="relative flex-1 sm:flex-none min-w-[170px]">
                   <select
                     value={activeCategory}
+                    onMouseDown={(e) => {
+                      if (!isUnlocked) {
+                        e.preventDefault();
+                        requireAdmin(() => {});
+                      }
+                    }}
                     onChange={(e) => {
                       const nextCat = e.target.value as PayrollCategory;
                       if (nextCat === activeCategory) return;
@@ -870,21 +871,56 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Dropdown Periode Bulan */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
-                  Bulan:
+              {/* Dropdown Periode Bulan (Ikut Dikunci saat Mode Kunci Aktif) */}
+              <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                  <Calendar className="w-4 h-4 text-blue-400" />
+                  <span className="hidden sm:inline">Bulan:</span>
+                  {!isUnlocked && (
+                    <button
+                      type="button"
+                      onClick={() => requireAdmin(() => {})}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/80 text-amber-300 hover:bg-amber-900 border border-amber-600/50 rounded text-[10px] font-bold transition"
+                      title="Bulan dikunci: Klik untuk membuka kunci dengan password admin"
+                    >
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>Terkunci</span>
+                    </button>
+                  )}
                 </span>
-                <div className="relative min-w-[140px]">
+                <div className="relative flex-1 sm:flex-none min-w-[145px]">
                   <select
                     value={currentPeriodId}
-                    onChange={(e) =>
-                      setActivePeriodIdByCategory((prev) => ({
-                        ...prev,
-                        [activeCategory]: e.target.value,
-                      }))
+                    onMouseDown={(e) => {
+                      if (!isUnlocked) {
+                        e.preventDefault();
+                        requireAdmin(() => {});
+                      }
+                    }}
+                    onChange={(e) => {
+                      const nextPeriodId = e.target.value;
+                      if (nextPeriodId === currentPeriodId) return;
+                      requireAdmin(() => {
+                        setActivePeriodIdByCategory((prev) => ({
+                          ...prev,
+                          [activeCategory]: nextPeriodId,
+                        }));
+                        const target = currentCategoryPeriods.find((p) => p.id === nextPeriodId);
+                        if (target) {
+                          showToast(`Beralih ke periode: ${target.title}`);
+                        }
+                      });
+                    }}
+                    className={`w-full appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm font-extrabold rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-2xs ${
+                      !isUnlocked
+                        ? 'text-amber-200 bg-amber-950/50 hover:bg-amber-950/80 border border-amber-600/50'
+                        : 'text-slate-200 bg-slate-800 hover:bg-slate-750 border border-slate-700'
+                    }`}
+                    title={
+                      !isUnlocked
+                        ? 'Bulan Terkunci: Memerlukan password admin untuk merubah bulan'
+                        : 'Pilih Periode Bulan'
                     }
-                    className="w-full appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl cursor-pointer focus:ring-2 focus:ring-emerald-500 outline-none transition"
                   >
                     {currentCategoryPeriods.map((p) => (
                       <option key={p.id} value={p.id} className="bg-slate-900 text-slate-100">
@@ -892,7 +928,11 @@ export default function App() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 sm:top-3 pointer-events-none" />
+                  <ChevronDown
+                    className={`w-4 h-4 absolute right-2.5 top-2.5 sm:top-3 pointer-events-none ${
+                      !isUnlocked ? 'text-amber-400' : 'text-slate-400'
+                    }`}
+                  />
                 </div>
               </div>
 
@@ -1082,7 +1122,7 @@ export default function App() {
         {/* CONTAINER TABEL UTAMA LAPORAN */}
         <div className="bg-slate-900/95 rounded-2xl shadow-md border border-slate-800 p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 printable-area">
           {/* KOP SURAT & JUDUL LAPORAN (DAPAT DIEDIT REALTIME) */}
-          <div className="border-b-2 border-slate-700 pb-4 text-center">
+          <div className="border-b-2 border-slate-600 pb-4 text-center">
             <h2 className="text-sm sm:text-base md:text-lg font-black uppercase tracking-wider text-slate-100">
               {currentSettings.instansi}
             </h2>
@@ -1228,12 +1268,12 @@ export default function App() {
             </span>
           </div>
 
-          {/* TABEL DENGAN KOLOM JUMLAH POTONGAN */}
-          <div className="border border-slate-700 overflow-x-auto rounded-xl">
+          {/* TABEL DENGAN KOLOM JUMLAH POTONGAN (GARIS LEBIH TERANG & KONTRAS) */}
+          <div className="border border-slate-600 overflow-x-auto rounded-xl shadow-md">
             <table className="w-full min-w-[780px] text-xs border-collapse printable-table">
               {/* Header Tabel */}
               <thead>
-                <tr className="bg-slate-800 text-slate-200 font-extrabold border-b border-slate-700 divide-x divide-slate-700">
+                <tr className="bg-slate-800 text-slate-100 font-extrabold border-b-2 border-slate-500 divide-x divide-slate-600">
                   <th className="py-3 px-3 text-center w-12 tracking-wider">
                     NO
                   </th>
@@ -1259,7 +1299,7 @@ export default function App() {
               </thead>
 
               {/* Body Rows */}
-              <tbody className="divide-y divide-slate-800 bg-slate-900/90 text-slate-200">
+              <tbody className="divide-y divide-slate-600 bg-slate-900/90 text-slate-200">
                 {filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-400 italic">
@@ -1270,7 +1310,7 @@ export default function App() {
                   filteredItems.map((item, idx) => (
                     <tr
                       key={item.id}
-                      className="divide-x divide-slate-800 hover:bg-slate-800/50 transition group"
+                      className="divide-x divide-slate-600 hover:bg-slate-800/60 transition group"
                     >
                       {/* NO */}
                       <td className="py-2.5 px-3 text-center font-normal text-slate-400 align-middle">
@@ -1377,7 +1417,7 @@ export default function App() {
                               <span>{item.feedback ? 'Ulasan' : '+ Ulasan'}</span>
                             </button>
 
-                            <div className="flex items-center gap-0.5 pl-1 border-l border-slate-700">
+                            <div className="flex items-center gap-0.5 pl-1 border-l border-slate-600">
                               <button
                                 onClick={() => {
                                   setSlipItem(item);
@@ -1418,14 +1458,14 @@ export default function App() {
 
               {/* Baris JUMLAH */}
               <tfoot>
-                <tr className="border-t-2 border-slate-700 divide-x divide-slate-700 bg-slate-800 font-extrabold text-slate-100">
+                <tr className="border-t-2 border-slate-500 divide-x divide-slate-600 bg-slate-800 font-extrabold text-slate-100">
                   <td
                     colSpan={3}
                     className="py-3 px-4 text-center font-extrabold tracking-wider text-slate-100 text-sm"
                   >
                     JUMLAH
                   </td>
-                  <td className="py-3 px-4 text-right font-mono text-slate-200 font-extrabold">
+                  <td className="py-3 px-4 text-right font-mono text-slate-100 font-extrabold">
                     {formatNominal(totals.kotor)}
                   </td>
                   <td className="py-3 px-4 text-right font-mono text-rose-400 font-extrabold">
