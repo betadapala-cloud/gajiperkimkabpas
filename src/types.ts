@@ -48,4 +48,5 @@ export interface ReportSettings {
   subJudul?: string;
   kota?: string;
   tanggalLaporan?: string;
+  showNoRekening?: boolean; // Menyembunyikan / menampilkan nomor rekening pegawai (default: true)
 }

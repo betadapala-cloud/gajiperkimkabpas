@@ -46,29 +46,36 @@ export function exportPeriodToExcel(period: PayrollPeriod, settings: ReportSetti
     [settings.judulLaporan.toUpperCase()],
     [`PERIODE: ${period.title.toUpperCase()}`],
     [], // Blank line
-    ['NO', 'NAMA', 'NO REKENING', 'NILAI KOTOR', 'JUMLAH POTONGAN', 'NILAI BERSIH'],
   ];
 
-  period.items.forEach((item, index) => {
-    aoa.push([
-      item.no || index + 1,
-      item.nama.toUpperCase(),
-      item.noRekening,
-      item.gajiKotor,
-      item.potongan,
-      item.gajiBersih,
-    ]);
-  });
+  const showNoRekening = settings.showNoRekening !== false;
 
-  // Baris JUMLAH
-  aoa.push([
-    '',
-    'JUMLAH',
-    '',
-    totalKotor,
-    totalPotongan,
-    totalBersih,
-  ]);
+  if (showNoRekening) {
+    aoa.push(['NO', 'NAMA', 'NO REKENING', 'NILAI KOTOR', 'JUMLAH POTONGAN', 'NILAI BERSIH']);
+    period.items.forEach((item, index) => {
+      aoa.push([
+        item.no || index + 1,
+        item.nama.toUpperCase(),
+        item.noRekening,
+        item.gajiKotor,
+        item.potongan,
+        item.gajiBersih,
+      ]);
+    });
+    aoa.push(['', 'JUMLAH', '', totalKotor, totalPotongan, totalBersih]);
+  } else {
+    aoa.push(['NO', 'NAMA', 'NILAI KOTOR', 'JUMLAH POTONGAN', 'NILAI BERSIH']);
+    period.items.forEach((item, index) => {
+      aoa.push([
+        item.no || index + 1,
+        item.nama.toUpperCase(),
+        item.gajiKotor,
+        item.potongan,
+        item.gajiBersih,
+      ]);
+    });
+    aoa.push(['', 'JUMLAH', totalKotor, totalPotongan, totalBersih]);
+  }
 
   aoa.push([]);
   aoa.push(['Catatan: Bahwasannya Nilai Bersih yang ditampilkan adalah Gaji sebelum dipotong oleh BANK JATIM atau BANK MINA MANDIRI. Untuk Jumlah Potongan Termasuk dari (INFAQ / DHARMA WANITA / PMI / BPJS).']);
@@ -76,14 +83,22 @@ export function exportPeriodToExcel(period: PayrollPeriod, settings: ReportSetti
   const ws = XLSX.utils.aoa_to_sheet(aoa);
 
   // Set column widths
-  ws['!cols'] = [
-    { wch: 8 },  // NO
-    { wch: 35 }, // NAMA
-    { wch: 20 }, // NO REKENING
-    { wch: 18 }, // NILAI KOTOR
-    { wch: 22 }, // JUMLAH POTONGAN
-    { wch: 18 }, // NILAI BERSIH
-  ];
+  ws['!cols'] = showNoRekening
+    ? [
+        { wch: 8 },  // NO
+        { wch: 35 }, // NAMA
+        { wch: 20 }, // NO REKENING
+        { wch: 18 }, // NILAI KOTOR
+        { wch: 22 }, // JUMLAH POTONGAN
+        { wch: 18 }, // NILAI BERSIH
+      ]
+    : [
+        { wch: 8 },  // NO
+        { wch: 45 }, // NAMA
+        { wch: 18 }, // NILAI KOTOR
+        { wch: 22 }, // JUMLAH POTONGAN
+        { wch: 18 }, // NILAI BERSIH
+      ];
 
   const wb = XLSX.utils.book_new();
   const sheetName = period.title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 31) || 'Laporan_Gaji';

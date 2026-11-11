@@ -78,7 +78,7 @@ export const SlipGajiModal: React.FC<Props> = ({
                 Nomor Rekening
               </span>
               <span className="font-mono font-semibold text-sm text-slate-800">
-                {item.noRekening}
+                {settings.showNoRekening !== false ? item.noRekening : '•••••••••• (Disembunyikan)'}
               </span>
             </div>
           </div>

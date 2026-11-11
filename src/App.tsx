@@ -1280,9 +1280,11 @@ export default function App() {
                   <th className="py-3 px-4 text-center tracking-wider">
                     NAMA
                   </th>
-                  <th className="py-3 px-4 text-center w-40 tracking-wider">
-                    NO REKENING
-                  </th>
+                  {currentSettings.showNoRekening !== false && (
+                    <th className="py-3 px-4 text-center w-40 tracking-wider">
+                      NO REKENING
+                    </th>
+                  )}
                   <th className="py-3 px-4 text-center w-36 tracking-wider">
                     NILAI KOTOR
                   </th>
@@ -1302,7 +1304,7 @@ export default function App() {
               <tbody className="divide-y divide-slate-600 bg-slate-900/90 text-slate-200">
                 {filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400 italic">
+                    <td colSpan={currentSettings.showNoRekening !== false ? 7 : 6} className="py-8 text-center text-slate-400 italic">
                       Tidak ada data pegawai yang sesuai.
                     </td>
                   </tr>
@@ -1329,11 +1331,13 @@ export default function App() {
                         </div>
                       </td>
 
-                      {/* NO REKENING */}
-                      <td className="py-2.5 px-4 text-center font-mono text-slate-300 relative align-middle">
-                        <span className="absolute left-1 top-1 w-0 h-0 border-t-4 border-t-emerald-500 border-r-4 border-r-transparent print-hide"></span>
-                        {item.noRekening}
-                      </td>
+                      {/* NO REKENING (Sembunyikan jika diatur nonaktif di Pengaturan) */}
+                      {currentSettings.showNoRekening !== false && (
+                        <td className="py-2.5 px-4 text-center font-mono text-slate-300 relative align-middle">
+                          <span className="absolute left-1 top-1 w-0 h-0 border-t-4 border-t-emerald-500 border-r-4 border-r-transparent print-hide"></span>
+                          {item.noRekening}
+                        </td>
+                      )}
 
                       {/* NILAI KOTOR */}
                       <td className="py-2.5 px-4 text-right font-mono text-slate-200 align-middle">
@@ -1460,7 +1464,7 @@ export default function App() {
               <tfoot>
                 <tr className="border-t-2 border-slate-500 divide-x divide-slate-600 bg-slate-800 font-extrabold text-slate-100">
                   <td
-                    colSpan={3}
+                    colSpan={currentSettings.showNoRekening !== false ? 3 : 2}
                     className="py-3 px-4 text-center font-extrabold tracking-wider text-slate-100 text-sm"
                   >
                     JUMLAH
@@ -1501,9 +1505,14 @@ export default function App() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-950 text-slate-500 text-xs py-4 border-t border-slate-800 print-hide text-center">
-        <p>Aplikasi Tanda Terima Gaji dan TPP Pegawai Secara Elektronik • Mendukung Gaji Paruh Waktu, Gaji PNS, Gaji PPPK, dan TPP PNS • Copyright @joko92m</p>
+      {/* Footer Aplikasi */}
+      <footer className="bg-slate-950 text-slate-400 text-xs py-5 border-t border-slate-800 print-hide text-center space-y-1">
+        <p className="font-semibold text-slate-300 tracking-wide">
+          Copyright 2026 @joko92m
+        </p>
+        <p className="text-[11px] text-slate-500">
+          Sistem Tanda Terima Gaji & TPP Elektronik • Dinas Perumahan dan Kawasan Permukiman Kab Pasuruan
+        </p>
       </footer>
 
       {/* MODAL AUTENTIKASI ADMIN (user: admin, password: djoko92m) */}

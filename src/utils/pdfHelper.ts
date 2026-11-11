@@ -49,11 +49,13 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
   const totalBersih = period.items.reduce((sum, item) => sum + item.gajiBersih, 0);
 
   // 2. Data Tabel dengan kolom JUMLAH POTONGAN & KONFIRMASI/ULASAN
+  const showNoRekening = settings.showNoRekening !== false;
+
   const tableHead = [
     [
       { content: 'NO', styles: { halign: 'center' as const } },
       { content: 'NAMA', styles: { halign: 'center' as const } },
-      { content: 'NO REKENING', styles: { halign: 'center' as const } },
+      ...(showNoRekening ? [{ content: 'NO REKENING', styles: { halign: 'center' as const } }] : []),
       { content: 'NILAI KOTOR', styles: { halign: 'center' as const } },
       { content: 'JUMLAH POTONGAN', styles: { halign: 'center' as const } },
       { content: 'NILAI BERSIH', styles: { halign: 'center' as const } },
@@ -64,7 +66,7 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
   const tableBody = period.items.map((item, index) => [
     { content: String(item.no || index + 1), styles: { halign: 'center' as const } },
     { content: item.nama.toUpperCase(), styles: { halign: 'left' as const } },
-    { content: item.noRekening, styles: { halign: 'center' as const } },
+    ...(showNoRekening ? [{ content: item.noRekening, styles: { halign: 'center' as const } }] : []),
     { content: formatNominal(item.gajiKotor), styles: { halign: 'right' as const } },
     { content: formatNominal(item.potongan), styles: { halign: 'right' as const } },
     { content: formatNominal(item.gajiBersih), styles: { halign: 'right' as const } },
@@ -79,7 +81,7 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
     [
       {
         content: 'JUMLAH',
-        colSpan: 3,
+        colSpan: showNoRekening ? 3 : 2,
         styles: { halign: 'center' as const, fontStyle: 'bold' as const },
       },
       {
@@ -100,6 +102,25 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
       },
     ],
   ];
+
+  const columnStyles: Record<string, { cellWidth: number; fontSize?: number }> = showNoRekening
+    ? {
+        0: { cellWidth: 10 }, // NO
+        1: { cellWidth: 54 }, // NAMA
+        2: { cellWidth: 32 }, // NO REKENING
+        3: { cellWidth: 35 }, // NILAI KOTOR
+        4: { cellWidth: 35 }, // JUMLAH POTONGAN
+        5: { cellWidth: 33 }, // NILAI BERSIH
+        6: { cellWidth: 70, fontSize: 7.5 }, // KONFIRMASI & ULASAN
+      }
+    : {
+        0: { cellWidth: 10 }, // NO
+        1: { cellWidth: 80 }, // NAMA
+        2: { cellWidth: 37 }, // NILAI KOTOR
+        3: { cellWidth: 37 }, // JUMLAH POTONGAN
+        4: { cellWidth: 35 }, // NILAI BERSIH
+        5: { cellWidth: 70, fontSize: 7.5 }, // KONFIRMASI & ULASAN
+      };
 
   autoTable(doc, {
     startY: currentY,
@@ -129,15 +150,7 @@ export function exportPeriodToPdf(period: PayrollPeriod, settings: ReportSetting
       lineColor: [40, 40, 40],
       lineWidth: 0.35,
     },
-    columnStyles: {
-      0: { cellWidth: 10 }, // NO
-      1: { cellWidth: 54 }, // NAMA
-      2: { cellWidth: 32 }, // NO REKENING
-      3: { cellWidth: 35 }, // NILAI KOTOR
-      4: { cellWidth: 35 }, // JUMLAH POTONGAN
-      5: { cellWidth: 33 }, // NILAI BERSIH
-      6: { cellWidth: 70, fontSize: 7.5 }, // KONFIRMASI & ULASAN
-    },
+    columnStyles,
     margin: { left: 14, right: 14 },
     tableWidth: 'auto',
   });

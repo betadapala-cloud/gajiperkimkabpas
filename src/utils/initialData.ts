@@ -35,6 +35,7 @@ export const INITIAL_REPORT_SETTINGS: Record<PayrollCategory, ReportSettings> = 
     subJudul: 'DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN',
     kota: 'Jakarta',
     tanggalLaporan: '31 Oktober 2024',
+    showNoRekening: true,
   },
   pns: {
     instansi: 'PEMERINTAH KABUPATEN / INSTANSI DAERAH',
@@ -43,6 +44,7 @@ export const INITIAL_REPORT_SETTINGS: Record<PayrollCategory, ReportSettings> = 
     subJudul: 'DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN',
     kota: 'Jakarta',
     tanggalLaporan: '31 Oktober 2024',
+    showNoRekening: true,
   },
   pppk: {
     instansi: 'PEMERINTAH KABUPATEN / INSTANSI DAERAH',
@@ -51,6 +53,7 @@ export const INITIAL_REPORT_SETTINGS: Record<PayrollCategory, ReportSettings> = 
     subJudul: 'DAFTAR REKAPITULASI PEMBAYARAN GAJI DAN POTONGAN',
     kota: 'Jakarta',
     tanggalLaporan: '31 Oktober 2024',
+    showNoRekening: true,
   },
   'tpp-pns': {
     instansi: 'PEMERINTAH KABUPATEN / INSTANSI DAERAH',
@@ -59,6 +62,7 @@ export const INITIAL_REPORT_SETTINGS: Record<PayrollCategory, ReportSettings> = 
     subJudul: 'DAFTAR REKAPITULASI PEMBAYARAN TPP DAN POTONGAN',
     kota: 'Jakarta',
     tanggalLaporan: '31 Oktober 2024',
+    showNoRekening: true,
   },
 };
 

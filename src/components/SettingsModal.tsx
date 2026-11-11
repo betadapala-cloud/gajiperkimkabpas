@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ReportSettings } from '../types';
-import { Settings, Save, X, Building, FileText } from 'lucide-react';
+import { Settings, Save, X, Building, FileText, CreditCard, Eye, EyeOff } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +16,10 @@ export const SettingsModal: React.FC<Props> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<ReportSettings>(settings);
+
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings, isOpen]);
 
   if (!isOpen) return null;
 
@@ -133,6 +137,78 @@ export const SettingsModal: React.FC<Props> = ({
                   }
                   className="w-full px-3.5 py-2 text-xs bg-slate-800 text-white border border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 placeholder-slate-500"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Opsi Tampilan & Privasi Nomor Rekening */}
+          <div className="pt-2 border-t border-slate-800 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <Eye className="w-3.5 h-3.5 text-amber-400" />
+              <span>Opsi Tampilan & Privasi Data</span>
+            </div>
+
+            <div className="p-3.5 bg-slate-800/80 border border-slate-700 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-xs font-bold text-slate-100">
+                      Nomor Rekening Pegawai
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Tampilkan atau sembunyikan kolom nomor rekening pegawai pada tabel laporan dan cetak.
+                  </p>
+                </div>
+
+                {/* Tombol Sakelar Toggle */}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.showNoRekening !== false}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      showNoRekening: prev.showNoRekening === false ? true : false,
+                    }))
+                  }
+                  className={`relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                    formData.showNoRekening !== false ? 'bg-emerald-600' : 'bg-slate-700'
+                  }`}
+                  title={
+                    formData.showNoRekening !== false
+                      ? 'Klik untuk menyembunyikan nomor rekening'
+                      : 'Klik untuk menampilkan nomor rekening'
+                  }
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-flex h-5 w-5 transform items-center justify-center rounded-full bg-white text-slate-900 shadow-md ring-0 transition duration-200 ease-in-out ${
+                      formData.showNoRekening !== false ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  >
+                    {formData.showNoRekening !== false ? (
+                      <Eye className="w-3 h-3 text-emerald-600" />
+                    ) : (
+                      <EyeOff className="w-3 h-3 text-slate-500" />
+                    )}
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <span
+                  className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                    formData.showNoRekening !== false
+                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60'
+                      : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
+                  }`}
+                >
+                  {formData.showNoRekening !== false
+                    ? '✓ Status: Nomor Rekening Ditampilkan'
+                    : '✗ Status: Nomor Rekening Disembunyikan (Privasi Aktif)'}
+                </span>
               </div>
             </div>
           </div>
